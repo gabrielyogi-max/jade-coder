@@ -3,325 +3,352 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jade Code</title>
+    <title>Jade Code AI</title>
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <!-- Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-    <!-- Monaco Dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Monaco -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+
     <style>
         :root {
-            --bg-app: #09090b;
-            --bg-sidebar: #101014;
-            --bg-panel: #18181b;
-            --bg-input: #202025;
-            --bg-toolbar: #141418;
+            /* Palette - Deep Space & Jade */
+            --bg-body: #050505;
+            --bg-sidebar: rgba(10, 10, 10, 0.75);
+            --bg-panel: #0a0a0a;
+            --bg-surface: #121212;
+            --bg-input: #181818;
             
-            --border: #27272a;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-focus: rgba(0, 217, 126, 0.4);
             
-            --primary: #00d97e; /* Jade Green */
-            --primary-hover: #00b368;
-            --primary-dim: rgba(0, 217, 126, 0.15);
+            --primary: #00d97e;
+            --primary-glow: rgba(0, 217, 126, 0.3);
+            --accent-gradient: linear-gradient(135deg, #00d97e 0%, #00a86b 100%);
             
-            --text-main: #e4e4e7;
-            --text-muted: #a1a1aa;
+            --text-main: #ededed;
+            --text-muted: #888888;
+            --text-dim: #555555;
             
-            --font-ui: 'Inter', sans-serif;
+            --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-code: 'JetBrains Mono', monospace;
             
             --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            
+            --shadow-elevation: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        * { box-sizing: border-box; outline: none; }
+        /* Base Reset */
+        * { box-sizing: border-box; outline: none; -webkit-font-smoothing: antialiased; }
         
         body {
             margin: 0; padding: 0;
             display: flex; height: 100vh;
-            background: var(--bg-app);
+            background-color: var(--bg-body);
             color: var(--text-main);
             font-family: var(--font-ui);
             overflow: hidden;
+            background-image: radial-gradient(circle at top left, rgba(0, 217, 126, 0.03), transparent 40%);
         }
 
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        /* Scrollbars - Minimalist */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
 
-        /* Sidebar */
+        /* --- SIDEBAR (Glassy & Premium) --- */
         #sidebar {
-            width: 360px;
+            width: 380px;
             background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
+            border-right: 1px solid var(--border-subtle);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex; flex-direction: column;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.2);
-            z-index: 10;
+            z-index: 20;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.2);
         }
 
         .brand-header {
-            padding: 20px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 1.1rem; font-weight: 700;
-            color: var(--primary);
-            border-bottom: 1px solid var(--border);
-            letter-spacing: -0.5px;
+            height: 60px;
+            padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-subtle);
         }
-        .brand-header i { font-size: 1.4rem; }
+        .logo {
+            font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
+            color: var(--text-main); display: flex; align-items: center; gap: 8px;
+        }
+        .logo i { color: var(--primary); font-size: 18px; text-shadow: 0 0 10px var(--primary-glow); }
+        .status-dot { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px var(--primary); }
 
-        .config-area { padding: 15px 15px 0; }
-        .input-group {
+        /* Config Input */
+        .config-area { padding: 20px 24px 0; }
+        .input-wrapper {
             position: relative;
-            background: var(--bg-input);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            display: flex; align-items: center;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
-        .input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-dim); }
-        .input-group i { padding: 0 10px; color: var(--text-muted); font-size: 1.1rem; }
-        .input-group input {
-            width: 100%; background: transparent; border: none;
-            color: var(--text-main); padding: 10px 10px 10px 0;
-            font-family: var(--font-ui); font-size: 0.9rem;
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary-glow);
+            background: var(--bg-input);
         }
-        .input-group input::placeholder { color: #52525b; }
+        .input-wrapper input {
+            width: 100%; padding: 10px 12px 10px 36px;
+            background: transparent; border: none;
+            color: var(--text-main); font-size: 12px; font-family: var(--font-code);
+        }
+        .input-wrapper i {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-dim); font-size: 14px;
+        }
 
+        /* Chat History */
         #chat-history {
             flex: 1; overflow-y: auto;
-            padding: 20px;
-            display: flex; flex-direction: column; gap: 16px;
+            padding: 24px;
+            display: flex; flex-direction: column; gap: 24px;
         }
 
-        .message {
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 0.95rem;
-            line-height: 1.5;
-            max-width: 90%;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .message-group { display: flex; gap: 12px; opacity: 0; animation: fadeIn 0.4s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .message.user {
-            align-self: flex-end;
-            background: var(--primary);
-            color: #052e16; /* Dark text for contrast */
-            border-bottom-right-radius: 2px;
-            font-weight: 500;
+        .avatar {
+            width: 28px; height: 28px; flex-shrink: 0;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
         }
-        .message.bot {
-            align-self: flex-start;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            border-bottom-left-radius: 2px;
+        .avatar.bot { background: linear-gradient(135deg, #222, #333); border: 1px solid var(--border-subtle); color: var(--primary); }
+        .avatar.user { background: var(--text-main); color: #000; }
+
+        .bubble {
+            flex: 1; font-size: 13.5px; line-height: 1.6; color: #d4d4d4;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .bubble strong { color: #fff; font-weight: 500; }
+        
+        .code-snippet {
+            background: #111; border: 1px solid var(--border-subtle);
+            border-radius: 6px; padding: 12px; font-family: var(--font-code);
+            font-size: 12px; position: relative; overflow: hidden;
+        }
+        .code-snippet::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--primary); opacity: 0.5;
         }
 
+        /* Chat Input Area */
         .input-area {
-            padding: 20px;
-            background: var(--bg-sidebar);
-            border-top: 1px solid var(--border);
+            padding: 24px;
+            background: linear-gradient(to top, var(--bg-sidebar) 50%, transparent);
         }
-        .chat-box {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
+        .chat-composer {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 10px;
-            transition: 0.2s;
+            padding: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: border-color 0.2s;
         }
-        .chat-box:focus-within { border-color: var(--text-muted); }
+        .chat-composer:focus-within { border-color: rgba(255,255,255,0.15); }
         
         textarea#userInput {
-            width: 100%; height: 50px;
+            width: 100%; height: 48px; min-height: 24px;
             background: transparent; border: none;
-            color: var(--text-main); resize: none;
-            font-family: var(--font-ui); font-size: 0.95rem;
+            color: var(--text-main); padding: 10px 12px;
+            font-family: var(--font-ui); font-size: 13px;
+            resize: none;
         }
         
-        .chat-actions {
-            display: flex; justify-content: flex-end; margin-top: 5px;
+        .composer-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 8px 6px;
         }
+        .hint { font-size: 10px; color: var(--text-dim); }
+        
         button#sendBtn {
-            background: var(--primary);
-            color: #052e16;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 600;
-            display: flex; align-items: center; gap: 6px;
-            transition: 0.2s;
-            font-size: 0.9rem;
+            background: var(--text-main); color: #000;
+            border: none; width: 28px; height: 28px;
+            border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.1s;
         }
-        button#sendBtn:hover { background: var(--primary-hover); }
-        button#sendBtn i { font-size: 1.1rem; }
+        button#sendBtn:hover { transform: scale(1.05); }
+        button#sendBtn i { font-size: 14px; }
 
-        /* Main Area */
-        #main-area { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+        /* --- MAIN AREA --- */
+        #main-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-body); position: relative; }
         
+        /* Toolbar */
         .editor-toolbar {
             height: 50px;
-            background: var(--bg-toolbar);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--bg-body); /* Seamless */
         }
+        
+        .tabs-nav { display: flex; gap: 8px; }
         .file-tab {
-            font-size: 0.9rem; color: var(--text-muted);
-            display: flex; align-items: center; gap: 8px;
-            background: var(--bg-app); padding: 6px 12px;
-            border-radius: var(--radius-sm); border: 1px solid var(--border);
+            padding: 6px 12px; font-size: 12px; color: var(--text-muted);
+            border-radius: 4px; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
+        .file-tab:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .file-tab.active { background: rgba(255,255,255,0.08); color: var(--text-main); }
         
         #runBtn {
-            background: var(--primary);
-            color: #052e16;
-            border: none;
-            padding: 8px 20px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.85rem;
-            display: flex; align-items: center; gap: 8px;
-            transition: 0.2s; box-shadow: 0 2px 10px rgba(0, 230, 118, 0.2);
+            background: var(--accent-gradient);
+            color: #000; border: none;
+            padding: 6px 16px; border-radius: 6px;
+            font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 0 15px rgba(0, 217, 126, 0.2);
+            transition: all 0.2s;
         }
-        #runBtn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        #runBtn:active { transform: translateY(0); }
+        #runBtn:hover { box-shadow: 0 0 25px rgba(0, 217, 126, 0.4); transform: translateY(-1px); }
         
-        #editor-container { flex: 1; background: #1e1e1e; }
-        
+        /* Editor */
+        #editor-container { flex: 1; opacity: 0; animation: reveal 0.5s 0.2s forwards; }
+        @keyframes reveal { to { opacity: 1; } }
+
         /* Bottom Panel */
         #bottom-panel {
-            height: 280px;
+            height: 300px;
             background: var(--bg-panel);
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border-subtle);
             display: flex; flex-direction: column;
         }
         
-        .tabs {
-            display: flex;
-            background: var(--bg-toolbar);
-            border-bottom: 1px solid var(--border);
-            padding: 0 10px;
+        .panel-header {
+            display: flex; border-bottom: 1px solid var(--border-subtle);
+            padding: 0 16px; height: 40px; align-items: center;
+            background: var(--bg-body);
         }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 0.85rem; font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 2px solid transparent;
-            transition: 0.2s;
-            display: flex; align-items: center; gap: 6px;
+        .panel-tab {
+            padding: 0 16px; height: 100%; display: flex; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 500; color: var(--text-muted);
+            cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s;
         }
-        .tab:hover { color: var(--text-main); }
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+        .panel-tab:hover { color: var(--text-main); }
+        .panel-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        
+        .panel-content { flex: 1; position: relative; overflow: hidden; }
+        
+        #terminal, #graph-area { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto; 
+            padding: 20px;
         }
         
-        .panel-content { flex: 1; overflow: auto; position: relative; padding: 0; }
-        
-        #terminal {
-            padding: 15px;
-            font-family: var(--font-code);
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        .term-out { color: var(--text-main); white-space: pre-wrap; margin-bottom: 4px; }
-        .term-err { color: #ff5252; white-space: pre-wrap; margin-bottom: 4px; }
-        
-        #graph-area {
-            display: none; padding: 20px;
-            text-align: center; height: 100%;
-            background-image: radial-gradient(#27272a 1px, transparent 1px);
-            background-size: 20px 20px;
+        #terminal { font-family: var(--font-code); font-size: 13px; line-height: 1.5; color: #ccc; }
+        .term-line { display: block; margin-bottom: 2px; }
+        .term-err { color: #ff5f5f; }
+        .term-info { color: #66ffaa; }
+
+        #graph-area { 
+            display: none; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #111 0%, #050505 100%);
         }
         #graph-area img {
-            max-height: 100%; max-width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
+            max-height: 90%; max-width: 90%;
+            border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid var(--border-subtle);
         }
-        
+
+        /* Utilities */
         .apply-btn {
-            background: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 6px 12px;
-            margin-top: 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 0.8rem; font-weight: 600;
-            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(0, 217, 126, 0.1); color: var(--primary);
+            border: 1px solid rgba(0, 217, 126, 0.2);
+            padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer;
+            margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
             transition: 0.2s;
         }
-        .apply-btn:hover { background: var(--primary-dim); }
-        
+        .apply-btn:hover { background: rgba(0, 217, 126, 0.2); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+<!-- Sidebar -->
 <div id="sidebar">
     <div class="brand-header">
-        <i class="ri-code-s-slash-fill"></i> Jade Code
+        <div class="logo"><i class="ri-code-s-slash-line"></i> JADE AI</div>
+        <div class="status-dot" title="Conectado"></div>
     </div>
+    
     <div class="config-area">
-        <div class="input-group">
-            <i class="ri-link"></i>
-            <input type="text" id="apiUrl" placeholder="Link do Túnel (ngrok)..." value="">
+        <div class="input-wrapper">
+            <i class="ri-link-m"></i>
+            <input type="text" id="apiUrl" placeholder="Cole o link do ngrok aqui..." value="">
         </div>
     </div>
+
     <div id="chat-history">
-        <div class="message bot">
-            Bem-vindo ao Jade Code! 🌿<br>O ambiente está pronto.
+        <!-- Initial Bot Message -->
+        <div class="message-group">
+            <div class="avatar bot"><i class="ri-robot-2-line"></i></div>
+            <div class="bubble">
+                Olá! Sou o Jade AI. O ambiente de alta performance está pronto.
+            </div>
         </div>
     </div>
+
     <div class="input-area">
-        <div class="chat-box">
-            <textarea id="userInput" placeholder="Digite sua mensagem ou pedido..."></textarea>
-            <div class="chat-actions">
-                <button id="sendBtn" onclick="sendMessage()">
-                    <span>Enviar</span> <i class="ri-send-plane-fill"></i>
-                </button>
+        <div class="chat-composer">
+            <textarea id="userInput" placeholder="Peça para criar um gráfico ou código..."></textarea>
+            <div class="composer-footer">
+                <span class="hint">Ctrl + Enter para enviar</span>
+                <button id="sendBtn" onclick="sendMessage()"><i class="ri-arrow-up-line"></i></button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Main Workspace -->
 <div id="main-area">
     <div class="editor-toolbar">
-        <div class="file-tab"><i class="ri-file-code-line"></i> main.py</div>
+        <div class="tabs-nav">
+            <div class="file-tab active"><i class="ri-file-python-line"></i> script.py</div>
+            <div class="file-tab"><i class="ri-file-text-line"></i> README.md</div>
+        </div>
         <button id="runBtn" onclick="runCode()">
-            <i class="ri-play-fill"></i> EXECUTAR
+            <i class="ri-play-mini-fill"></i> RUN
         </button>
     </div>
+
     <div id="editor-container"></div>
-    
+
     <div id="bottom-panel">
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('term')" id="tab-term">
-                <i class="ri-terminal-box-line"></i> TERMINAL
+        <div class="panel-header">
+            <div class="panel-tab active" onclick="switchTab('term')" id="tab-term">
+                <i class="ri-terminal-line"></i> TERMINAL
             </div>
-            <div class="tab" onclick="switchTab('graph')" id="tab-graph">
-                <i class="ri-bar-chart-2-line"></i> GRÁFICO
+            <div class="panel-tab" onclick="switchTab('graph')" id="tab-graph">
+                <i class="ri-line-chart-line"></i> PREVIEW
             </div>
         </div>
         <div class="panel-content">
             <div id="terminal">
-                <div class="term-out" style="color: #666;">// Console pronto para saída...</div>
+                <span class="term-line" style="color: #666;">$ Initializing Jade environment...</span>
+                <span class="term-line" style="color: #666;">$ Ready.</span>
             </div>
-            <div id="graph-area">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #52525b;">
-                    <i class="ri-image-line" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                    <span>Nenhum gráfico gerado ainda</span>
+            <div id="graph-area" class="hidden">
+                <div style="color: #444; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <i class="ri-image-2-line" style="font-size: 24px;"></i>
+                    <span style="font-size: 12px;">Sem visualização</span>
                 </div>
             </div>
         </div>
@@ -329,72 +356,94 @@
 </div>
 
 <script>
-    // Configura o RequireJS para carregar o Monaco Editor
+    // --- Editor Setup ---
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
     
-    // Inicializa o Editor
     require(['vs/editor/editor.main'], function() {
-        monaco.editor.defineTheme('jade-dark', {
+        monaco.editor.defineTheme('jade-pro', {
             base: 'vs-dark',
             inherit: true,
-            rules: [],
+            rules: [
+                { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
+                { token: 'keyword', foreground: 'C586C0' },
+                { token: 'string', foreground: 'CE9178' }
+            ],
             colors: {
-                'editor.background': '#131313', 
+                'editor.background': '#050505', // Matches body
+                'editor.foreground': '#D4D4D4',
+                'editorLineNumber.foreground': '#444444',
+                'editor.lineHighlightBackground': '#ffffff08',
+                'editorCursor.foreground': '#00d97e',
+                'editor.selectionBackground': '#00d97e33'
             }
         });
 
         window.editor = monaco.editor.create(document.getElementById('editor-container'), {
-            value: 'import matplotlib.pyplot as plt\nimport numpy as np\n\n# Exemplo Simples\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\nplt.figure(figsize=(6,4))\nplt.plot(x, y, color="#00d97e")\nplt.title("Onda Jade")\nplt.grid(True, alpha=0.3)\nprint("Gráfico gerado com sucesso!")',
+            value: 'import matplotlib.pyplot as plt\nimport numpy as np\n\n# Gerando dados\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\n# Criando o gráfico\nplt.figure(figsize=(10, 6), facecolor="#0a0a0a")\nax = plt.axes()\nax.set_facecolor("#111")\n\nplt.plot(x, y, color="#00d97e", linewidth=2)\nplt.title("Jade Frequency Response", color="white")\nplt.grid(True, color="#333", linestyle="--")\nplt.tick_params(colors="white")\n\nprint("Gráfico renderizado com sucesso.")',
             language: 'python',
-            theme: 'vs-dark',
+            theme: 'jade-pro',
             automaticLayout: true,
             fontFamily: 'JetBrains Mono',
             fontSize: 14,
+            lineHeight: 24,
             minimap: { enabled: false },
-            padding: { top: 20 }
+            padding: { top: 20 },
+            scrollBeyondLastLine: false,
+            renderLineHighlight: 'all'
         });
     });
 
-    // --- Lógica de Interface ---
-
+    // --- Tab Logic ---
     function switchTab(tab) {
-        document.getElementById('tab-term').className = tab === 'term' ? 'tab active' : 'tab';
-        document.getElementById('tab-graph').className = tab === 'graph' ? 'tab active' : 'tab';
-        document.getElementById('terminal').style.display = tab === 'term' ? 'block' : 'none';
-        document.getElementById('graph-area').style.display = tab === 'graph' ? 'block' : 'none';
+        // Toggle Active State
+        document.getElementById('tab-term').classList.toggle('active', tab === 'term');
+        document.getElementById('tab-graph').classList.toggle('active', tab === 'graph');
+        
+        // Toggle Visibility
+        const term = document.getElementById('terminal');
+        const graph = document.getElementById('graph-area');
+        
+        if (tab === 'term') {
+            term.classList.remove('hidden');
+            graph.classList.add('hidden');
+        } else {
+            term.classList.add('hidden');
+            graph.classList.remove('hidden');
+            graph.style.display = 'flex'; // Restore flex for centering
+        }
     }
 
     function logToTerminal(text, type='out') {
         const term = document.getElementById('terminal');
-        const div = document.createElement('div');
-        div.className = type === 'err' ? 'term-err' : 'term-out';
-        div.innerText = text;
-        term.appendChild(div);
+        const span = document.createElement('span');
+        span.className = 'term-line';
+        if (type === 'err') span.classList.add('term-err');
+        if (type === 'info') span.classList.add('term-info');
+        span.innerText = text;
+        term.appendChild(span);
         term.scrollTop = term.scrollHeight;
     }
 
-    // --- Lógica de Execução ---
-
+    // --- Run Logic ---
     async function runCode() {
         const btn = document.getElementById('runBtn');
         const urlField = document.getElementById('apiUrl');
-        const originalText = btn.innerHTML;
+        const originalContent = btn.innerHTML;
         
-        // Normalize URL
         let baseUrl = urlField.value.trim();
         if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
         
         if (!baseUrl) { 
-            alert("Por favor, insira o link do túnel (ngrok) na barra lateral."); 
+            alert("URL do túnel não configurada."); 
             urlField.focus();
             return; 
         }
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> RODANDO...';
+        btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
         
         switchTab('term'); 
-        logToTerminal(">> Enviando código para execução...", 'out');
+        logToTerminal("> Executing script...", 'info');
 
         try {
             const response = await fetch(baseUrl + "/run", {
@@ -403,56 +452,47 @@
                 body: JSON.stringify({ code: window.editor.getValue() })
             });
             
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            
             const data = await response.json();
             
-            // Output Text
             if (data.error) logToTerminal(data.error, 'err');
-            if (data.output) logToTerminal(data.output, 'out');
+            if (data.output) logToTerminal(data.output);
             
-            // Output Image
-            const graphArea = document.getElementById('graph-area');
             if (data.image) {
+                const graphArea = document.getElementById('graph-area');
                 graphArea.innerHTML = `<img src="data:image/png;base64,${data.image}" />`;
-                logToTerminal(">> Gráfico gerado! Alternando para visualização...", 'out');
+                logToTerminal("> Visual output generated.", 'info');
                 switchTab('graph');
             }
-
         } catch (e) {
-            logToTerminal("Erro de Conexão: " + e.message, 'err');
+            logToTerminal("Connection Error: " + e.message, 'err');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = originalContent;
         }
     }
 
     // --- Chat Logic ---
-
-    function processBotResponse(text) {
+    function appendMessage(role, content, isHtml = false) {
         const history = document.getElementById('chat-history');
-        const div = document.createElement('div');
-        div.className = 'message bot';
+        const group = document.createElement('div');
+        group.className = 'message-group';
         
-        const codeBlockRegex = /```(?:python)?\s*([\s\S]*?)```/;
-        const match = text.match(codeBlockRegex);
-
-        if (match) {
-            const code = match[1];
-            let formattedText = text.replace(/\n/g, "<br>");
-            div.innerHTML = formattedText;
-            
-            const btn = document.createElement('button');
-            btn.className = 'apply-btn';
-            btn.innerHTML = '<i class="ri-flashlight-fill"></i> Aplicar no Editor';
-            btn.onclick = () => { 
-                if(window.editor) window.editor.setValue(code); 
-            };
-            div.appendChild(btn);
+        const avatar = document.createElement('div');
+        avatar.className = `avatar ${role}`;
+        avatar.innerHTML = role === 'bot' ? '<i class="ri-robot-2-line"></i>' : '<i class="ri-user-3-line"></i>';
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        if (isHtml) {
+            bubble.innerHTML = content;
         } else {
-            div.innerText = text;
+            bubble.innerText = content;
         }
-        history.appendChild(div);
+        
+        group.appendChild(avatar);
+        group.appendChild(bubble);
+        history.appendChild(group);
         history.scrollTop = history.scrollHeight;
     }
 
@@ -466,20 +506,11 @@
         
         if(!msg) return;
         
-        const history = document.getElementById('chat-history');
-        const userDiv = document.createElement('div');
-        userDiv.className = 'message user';
-        userDiv.innerText = msg;
-        history.appendChild(userDiv);
-        history.scrollTop = history.scrollHeight;
-        
+        appendMessage('user', msg);
         input.value = '';
 
         if (!baseUrl) {
-             const errDiv = document.createElement('div');
-             errDiv.className = 'message bot';
-             errDiv.innerText = "⚠️ Configure o link do túnel no topo da barra lateral para eu poder responder.";
-             history.appendChild(errDiv);
+             appendMessage('bot', "⚠️ Configure o link do túnel (ngrok) acima para conectar ao cérebro.");
              return;
         }
         
@@ -490,20 +521,52 @@
                 body: JSON.stringify({ message: msg, current_file_content: window.editor.getValue() })
             });
             const data = await res.json();
-            processBotResponse(data.response);
+            
+            // Format Code Blocks
+            let formatted = data.response
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\n/g, "<br>");
+                
+            // Detect Code Blocks for styling
+            const codeRegex = /```(?:python)?\s*([\s\S]*?)```/;
+            const match = data.response.match(codeRegex);
+            
+            if (match) {
+                const code = match[1];
+                formatted = data.response.replace(codeRegex, 
+                    `<div class="code-snippet">${code.replace(/</g, "&lt;")}</div>
+                     <button class="apply-btn" onclick="applyCode(this)">
+                        <i class="ri-flashlight-fill"></i> Aplicar Código
+                     </button>`
+                ).replace(/\n/g, "<br>");
+                
+                // Store code in the button element for retrieval
+                setTimeout(() => {
+                    const btns = document.querySelectorAll('.apply-btn');
+                    const lastBtn = btns[btns.length - 1];
+                    if(lastBtn) lastBtn.dataset.code = code;
+                }, 100);
+            }
+            
+            appendMessage('bot', formatted, true);
+
         } catch(e) { 
-            const errDiv = document.createElement('div');
-            errDiv.className = 'message bot';
-            errDiv.style.color = '#ff5252';
-            errDiv.innerText = "Erro ao conectar: " + e.message;
-            history.appendChild(errDiv);
+            appendMessage('bot', "Erro de conexão: " + e.message);
         }
     }
     
-    document.getElementById('userInput').addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') {
-            sendMessage();
+    function applyCode(btn) {
+        const code = btn.dataset.code;
+        if (code && window.editor) {
+            window.editor.setValue(code);
+            logToTerminal("> Code applied from chat.", 'info');
         }
+    }
+
+    // Ctrl+Enter to send
+    document.getElementById('userInput').addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') sendMessage();
     });
 </script>
 
