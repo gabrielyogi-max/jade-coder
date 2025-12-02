@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jade Code AI</title>
+    <title>Jade Code IDE</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,605 +19,631 @@
 
     <style>
         :root {
-            /* --- Dark Theme (Default - Zinc/Slate Grey) --- */
-            --bg-body: #09090b;       /* Zinc 950 */
-            --bg-sidebar: #18181b;    /* Zinc 900 */
-            --bg-panel: #18181b;
-            --bg-surface: #27272a;    /* Zinc 800 */
-            --bg-input: #27272a;
-            --bg-input-focus: #3f3f46; /* Zinc 700 */
+            /* --- Dark Theme (Zinc/Slate) --- */
+            --bg-activity: #18181b;     /* Activity Bar */
+            --bg-sidebar: #09090b;      /* Sidebar / Explorer */
+            --bg-editor: #09090b;       /* Editor Main */
+            --bg-panel: #09090b;        /* Bottom Panel */
+            --bg-status: #10b981;       /* Status Bar (Accent) */
+            --bg-tab: #09090b;          /* Inactive Tab */
+            --bg-tab-active: #09090b;   /* Active Tab */
             
-            --border-subtle: #27272a;
-            --border-strong: #3f3f46;
+            --border: #27272a;
+            --border-highlight: #3f3f46;
             
-            --primary: #10b981;       /* Emerald 500 */
-            --primary-hover: #059669;
-            --primary-glow: rgba(16, 185, 129, 0.2);
-            --accent-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --primary: #10b981;
+            --primary-dim: rgba(16, 185, 129, 0.1);
             
-            --text-main: #e4e4e7;     /* Zinc 200 */
-            --text-muted: #a1a1aa;    /* Zinc 400 */
-            --text-dim: #71717a;      /* Zinc 500 */
+            --text-main: #e4e4e7;
+            --text-muted: #71717a;
             
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
-
-            --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-ui: 'Inter', sans-serif;
             --font-code: 'JetBrains Mono', monospace;
             
-            --radius-sm: 6px;
-            --radius-md: 10px;
+            --icon-size: 20px;
         }
 
         [data-theme="light"] {
-            /* --- Light Theme (Clean/Crisp) --- */
-            --bg-body: #ffffff;
-            --bg-sidebar: #f8fafc;    /* Slate 50 */
+            --bg-activity: #e2e8f0;
+            --bg-sidebar: #f1f5f9;
+            --bg-editor: #ffffff;
             --bg-panel: #f8fafc;
-            --bg-surface: #ffffff;
-            --bg-input: #f1f5f9;      /* Slate 100 */
-            --bg-input-focus: #e2e8f0; /* Slate 200 */
+            --bg-status: #059669;
+            --bg-tab: #f1f5f9;
+            --bg-tab-active: #ffffff;
             
-            --border-subtle: #e2e8f0;
-            --border-strong: #cbd5e1;
+            --border: #cbd5e1;
+            --border-highlight: #94a3b8;
             
-            --primary: #059669;       /* Emerald 600 (Darker for contrast) */
-            --primary-hover: #047857;
-            --primary-glow: rgba(5, 150, 105, 0.1);
+            --primary: #059669;
+            --primary-dim: rgba(5, 150, 105, 0.1);
             
-            --text-main: #0f172a;     /* Slate 900 */
-            --text-muted: #64748b;    /* Slate 500 */
-            --text-dim: #94a3b8;      /* Slate 400 */
-            
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.05);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
         }
 
-        /* Base Reset */
-        * { box-sizing: border-box; outline: none; -webkit-font-smoothing: antialiased; }
+        * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
         
         body {
-            margin: 0; padding: 0;
-            display: flex; height: 100vh;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            height: 100vh; overflow: hidden;
+            background: var(--bg-editor); color: var(--text-main);
             font-family: var(--font-ui);
-            overflow: hidden;
-            transition: background 0.3s, color 0.3s;
+            display: grid;
+            grid-template-areas: 
+                "activity sidebar editor editor"
+                "activity sidebar panel panel"
+                "status status status status";
+            grid-template-columns: 48px 300px 1fr;
+            grid-template-rows: 1fr 250px 22px;
         }
 
-        /* Scrollbars */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
-
-        /* --- SIDEBAR --- */
-        #sidebar {
-            width: 320px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-subtle);
-            display: flex; flex-direction: column;
-            z-index: 20;
-            transition: background 0.3s, border-color 0.3s;
+        /* --- 1. Activity Bar (Far Left) --- */
+        #activity-bar {
+            grid-area: activity;
+            background: var(--bg-activity);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; padding-top: 10px;
+            z-index: 30;
         }
-
-        .brand-header {
-            height: 56px;
-            padding: 0 20px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-        .logo {
-            font-weight: 700; font-size: 14px; letter-spacing: -0.5px;
-            color: var(--text-main); display: flex; align-items: center; gap: 8px;
-        }
-        .logo i { color: var(--primary); font-size: 18px; }
-
-        .theme-toggle {
-            background: transparent; border: none;
-            color: var(--text-muted); cursor: pointer;
-            padding: 6px; border-radius: var(--radius-sm);
-            transition: 0.2s;
-        }
-        .theme-toggle:hover { background: var(--bg-input); color: var(--text-main); }
-
-        /* Config Input */
-        .config-area { padding: 16px 20px 0; }
-        .input-wrapper {
-            position: relative;
-            background: var(--bg-input);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            transition: 0.2s;
-        }
-        .input-wrapper:focus-within {
-            border-color: var(--primary);
-            background: var(--bg-input-focus);
-            box-shadow: 0 0 0 2px var(--primary-glow);
-        }
-        .input-wrapper input {
-            width: 100%; padding: 8px 12px 8px 34px;
-            background: transparent; border: none;
-            color: var(--text-main); font-size: 12px; font-family: var(--font-ui);
-        }
-        .input-wrapper i {
-            position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-            color: var(--text-dim); font-size: 14px;
-        }
-
-        /* Chat History */
-        #chat-history {
-            flex: 1; overflow-y: auto;
-            padding: 20px;
-            display: flex; flex-direction: column; gap: 20px;
-        }
-
-        .message-group { display: flex; gap: 12px; opacity: 0; animation: fadeIn 0.3s forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .avatar {
-            width: 28px; height: 28px; flex-shrink: 0;
-            border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; box-shadow: var(--shadow-sm);
-        }
-        .avatar.bot { background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--primary); }
-        .avatar.user { background: var(--primary); color: #fff; }
-
-        .bubble {
-            flex: 1; font-size: 13.5px; line-height: 1.6; color: var(--text-main);
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        
-        .code-snippet {
-            background: var(--bg-body); border: 1px solid var(--border-subtle);
-            border-radius: 6px; padding: 12px; font-family: var(--font-code);
-            font-size: 12px; border-left: 3px solid var(--primary);
-        }
-
-        /* Chat Input Area */
-        .input-area {
-            padding: 20px;
-            border-top: 1px solid var(--border-subtle);
-            background: var(--bg-sidebar);
-        }
-        .chat-composer {
-            background: var(--bg-input);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 4px;
-            transition: border-color 0.2s;
-        }
-        .chat-composer:focus-within { border-color: var(--primary); }
-        
-        textarea#userInput {
-            width: 100%; height: 42px; min-height: 42px;
-            background: transparent; border: none;
-            color: var(--text-main); padding: 8px 12px;
-            font-family: var(--font-ui); font-size: 13px;
-            resize: none;
-        }
-        
-        .composer-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 2px 8px 4px;
-        }
-        .hint { font-size: 10px; color: var(--text-dim); }
-        
-        button#sendBtn {
-            background: var(--primary); color: #fff;
-            border: none; width: 24px; height: 24px;
-            border-radius: 4px; cursor: pointer;
+        .activity-item {
+            width: 48px; height: 48px;
             display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); cursor: pointer;
+            border-left: 2px solid transparent;
             transition: 0.2s;
         }
-        button#sendBtn:hover { background: var(--primary-hover); }
+        .activity-item i { font-size: 24px; }
+        .activity-item:hover { color: var(--text-main); }
+        .activity-item.active { color: var(--primary); border-left-color: var(--primary); }
+        
+        .spacer { flex: 1; }
+        .activity-bottom { margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- MAIN AREA --- */
-        #main-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-body); position: relative; transition: background 0.3s; }
-        
-        /* Toolbar */
-        .editor-toolbar {
-            height: 48px;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border-subtle);
-            background: var(--bg-body);
-        }
-        
-        .tabs-nav { display: flex; gap: 4px; }
-        .file-tab {
-            padding: 6px 10px; font-size: 12px; color: var(--text-muted);
-            border-radius: 4px; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; gap: 6px; font-weight: 500;
-        }
-        .file-tab:hover { background: var(--bg-surface); color: var(--text-main); }
-        .file-tab.active { background: var(--bg-surface); color: var(--text-main); }
-        
-        #runBtn {
-            background: var(--primary);
-            color: #fff; border: none;
-            padding: 6px 14px; border-radius: 4px;
-            font-size: 11px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: 0.2s;
-        }
-        #runBtn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        
-        /* Editor */
-        #editor-container { flex: 1; }
-
-        /* Bottom Panel */
-        #bottom-panel {
-            height: 280px;
-            background: var(--bg-panel);
-            border-top: 1px solid var(--border-subtle);
+        /* --- 2. Sidebar (Explorer/Chat) --- */
+        #sidebar {
+            grid-area: sidebar;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
             display: flex; flex-direction: column;
-            transition: background 0.3s;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            height: 35px; padding: 0 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        /* Sidebar Views */
+        .sidebar-view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .sidebar-view.active { display: flex; }
+
+        /* File Explorer Styles */
+        .file-tree { padding: 10px 0; overflow-y: auto; }
+        .file-item {
+            padding: 6px 16px; cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: var(--text-main);
+            border-left: 2px solid transparent;
+        }
+        .file-item:hover { background: var(--primary-dim); }
+        .file-item.active { background: var(--primary-dim); border-left-color: var(--primary); color: var(--primary); }
+        .file-item i { font-size: 16px; color: var(--text-muted); }
+        
+        .explorer-actions {
+            padding: 10px 16px; border-bottom: 1px solid var(--border);
+            display: flex; gap: 8px;
+        }
+        .icon-btn {
+            background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+            transition: 0.2s;
+        }
+        .icon-btn:hover { color: var(--text-main); }
+
+        /* Chat Styles (Adapted) */
+        .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-config { padding: 10px; border-bottom: 1px solid var(--border); }
+        .chat-input-wrapper {
+            background: var(--bg-activity); border: 1px solid var(--border);
+            border-radius: 4px; display: flex; align-items: center; padding: 4px 8px;
+        }
+        .chat-input-wrapper input { background: transparent; border: none; color: var(--text-main); width: 100%; font-size: 12px; }
+        
+        #chat-history { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .message-group { display: flex; gap: 10px; font-size: 13px; }
+        .avatar { width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar.bot { background: var(--bg-activity); color: var(--primary); border: 1px solid var(--border); }
+        .avatar.user { background: var(--primary); color: white; }
+        .bubble { flex: 1; line-height: 1.5; word-wrap: break-word; }
+        .code-block { background: var(--bg-activity); border: 1px solid var(--border); padding: 8px; margin-top: 5px; border-radius: 4px; font-family: var(--font-code); font-size: 12px; }
+        
+        .chat-composer { padding: 10px; border-top: 1px solid var(--border); background: var(--bg-sidebar); }
+        textarea.chat-box {
+            width: 100%; height: 60px; background: var(--bg-activity); border: 1px solid var(--border);
+            color: var(--text-main); padding: 8px; resize: none; border-radius: 4px; font-family: var(--font-ui);
+        }
+
+        /* --- 3. Editor Area --- */
+        #editor-area {
+            grid-area: editor;
+            background: var(--bg-editor);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tabs-header {
+            height: 35px; background: var(--bg-activity);
+            display: flex; align-items: center; overflow-x: auto;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab {
+            height: 100%; padding: 0 15px;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: var(--text-muted); cursor: pointer;
+            background: var(--bg-tab); border-right: 1px solid var(--border);
+            min-width: 120px; max-width: 200px;
+        }
+        .tab.active { background: var(--bg-editor); color: var(--primary); border-top: 2px solid var(--primary); }
+        .tab .close-icon { margin-left: auto; font-size: 14px; opacity: 0; transition: 0.2s; }
+        .tab:hover .close-icon { opacity: 1; }
+        .tab .close-icon:hover { color: #ef4444; }
+
+        .editor-actions {
+            position: absolute; top: 5px; right: 20px; z-index: 10;
+        }
+        .run-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .run-btn:hover { background: #059669; }
+
+        #monaco-container { flex: 1; }
+
+        /* --- 4. Panel (Terminal) --- */
+        #bottom-panel {
+            grid-area: panel;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex; flex-direction: column;
         }
         
         .panel-header {
-            display: flex; border-bottom: 1px solid var(--border-subtle);
-            padding: 0 16px; height: 36px; align-items: center;
-            background: var(--bg-panel);
+            height: 30px; padding: 0 10px; display: flex; gap: 20px;
+            border-bottom: 1px solid var(--border);
         }
         .panel-tab {
-            padding: 0 12px; height: 100%; display: flex; align-items: center; gap: 6px;
-            font-size: 11px; font-weight: 600; color: var(--text-muted);
-            cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s;
+            height: 100%; display: flex; align-items: center;
+            font-size: 11px; text-transform: uppercase; cursor: pointer;
+            color: var(--text-muted); border-bottom: 2px solid transparent;
         }
-        .panel-tab:hover { color: var(--text-main); }
-        .panel-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .panel-tab.active { color: var(--text-main); border-bottom-color: var(--primary); }
         
-        .panel-content { flex: 1; position: relative; overflow: hidden; }
-        
-        #terminal, #graph-area { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: auto; 
-            padding: 16px;
+        .panel-body { flex: 1; position: relative; overflow: hidden; }
+        #terminal-view, #preview-view {
+            position: absolute; inset: 0; padding: 10px; overflow: auto;
+            font-family: var(--font-code); font-size: 12px;
         }
-        
-        #terminal { font-family: var(--font-code); font-size: 13px; line-height: 1.5; color: var(--text-muted); }
-        .term-line { display: block; margin-bottom: 2px; }
+        .term-line { display: block; margin-bottom: 2px; color: var(--text-muted); }
         .term-err { color: #ef4444; }
-        .term-info { color: var(--primary); }
+        
+        #preview-view { display: none; background: var(--bg-editor); display: flex; align-items: center; justify-content: center; }
+        #preview-view.hidden { display: none !important; }
+        #preview-view img { max-width: 90%; max-height: 90%; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
-        #graph-area { 
-            display: none; display: flex; align-items: center; justify-content: center;
-            background: var(--bg-surface);
+        /* --- 5. Status Bar --- */
+        #status-bar {
+            grid-area: status;
+            background: var(--bg-status);
+            color: white;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 10px; font-size: 11px;
         }
-        #graph-area img {
-            max-height: 95%; max-width: 95%;
-            border-radius: 4px; box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-subtle);
-            background: #fff; /* Ensure charts have white bg if transparent */
-        }
+        .status-left, .status-right { display: flex; gap: 15px; }
 
-        .apply-btn {
-            background: transparent; color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 4px 10px; border-radius: 4px; font-size: 10px; cursor: pointer;
-            margin-top: 8px; display: inline-flex; align-items: center; gap: 4px;
-            transition: 0.2s; font-weight: 600;
-        }
-        .apply-btn:hover { background: var(--primary-glow); }
-
-        .hidden { display: none !important; }
+        /* Utils */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-highlight); border-radius: 4px; }
     </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div id="sidebar">
-    <div class="brand-header">
-        <div class="logo"><i class="ri-code-box-line"></i> Jade Code</div>
-        <button class="theme-toggle" onclick="toggleTheme()" title="Mudar Tema">
-            <i class="ri-moon-line" id="themeIcon"></i>
-        </button>
-    </div>
-    
-    <div class="config-area">
-        <div class="input-wrapper">
-            <i class="ri-link-m"></i>
-            <input type="text" id="apiUrl" placeholder="Link do ngrok..." value="">
+    <!-- Activity Bar -->
+    <div id="activity-bar">
+        <div class="activity-item active" onclick="switchSidebar('explorer')" title="Explorador de Arquivos">
+            <i class="ri-file-copy-line"></i>
         </div>
-    </div>
-
-    <div id="chat-history">
-        <div class="message-group">
-            <div class="avatar bot"><i class="ri-robot-2-line"></i></div>
-            <div class="bubble">
-                Olá. Sistema pronto.
+        <div class="activity-item" onclick="switchSidebar('chat')" title="Jade AI">
+            <i class="ri-robot-2-line"></i>
+        </div>
+        <div class="spacer"></div>
+        <div class="activity-bottom">
+            <div class="activity-item" onclick="toggleTheme()" title="Mudar Tema">
+                <i class="ri-moon-line" id="themeIcon"></i>
             </div>
         </div>
     </div>
 
-    <div class="input-area">
-        <div class="chat-composer">
-            <textarea id="userInput" placeholder="Digite sua mensagem..."></textarea>
-            <div class="composer-footer">
-                <span class="hint">Ctrl + Enter</span>
-                <button id="sendBtn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <!-- Explorer View -->
+        <div id="view-explorer" class="sidebar-view active">
+            <div class="sidebar-header">Explorador</div>
+            <div class="explorer-actions">
+                <button class="icon-btn" onclick="createNewFile()" title="Novo Arquivo"><i class="ri-file-add-line"></i></button>
+                <button class="icon-btn" onclick="resetFiles()" title="Resetar"><i class="ri-refresh-line"></i></button>
+            </div>
+            <div class="file-tree" id="file-tree">
+                <!-- JS Populates this -->
+            </div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="view-chat" class="sidebar-view">
+            <div class="sidebar-header">Jade AI</div>
+            <div class="chat-config">
+                <div class="chat-input-wrapper">
+                    <i class="ri-link-m" style="color:var(--text-muted); margin-right:5px;"></i>
+                    <input type="text" id="apiUrl" placeholder="Link do ngrok...">
+                </div>
+            </div>
+            <div id="chat-history">
+                <div class="message-group">
+                    <div class="avatar bot"><i class="ri-robot-2-line"></i></div>
+                    <div class="bubble">Olá! Pronto para codar.</div>
+                </div>
+            </div>
+            <div class="chat-composer">
+                <textarea class="chat-box" id="userInput" placeholder="Digite sua mensagem... (Ctrl+Enter)"></textarea>
+                <button class="run-btn" style="width:100%; margin-top:5px; justify-content:center;" onclick="sendMessage()">Enviar</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Main Workspace -->
-<div id="main-area">
-    <div class="editor-toolbar">
-        <div class="tabs-nav">
-            <div class="file-tab active"><i class="ri-file-code-line"></i> main.py</div>
+    <!-- Editor -->
+    <div id="editor-area">
+        <div class="tabs-header" id="tabs-container">
+            <!-- JS Populates Tabs -->
         </div>
-        <button id="runBtn" onclick="runCode()">
-            <i class="ri-play-fill"></i> RUN
-        </button>
+        <div class="editor-actions">
+            <button class="run-btn" id="runBtn" onclick="runCode()">
+                <i class="ri-play-fill"></i> RUN
+            </button>
+        </div>
+        <div id="monaco-container"></div>
     </div>
 
-    <div id="editor-container"></div>
-
+    <!-- Panel -->
     <div id="bottom-panel">
         <div class="panel-header">
-            <div class="panel-tab active" onclick="switchTab('term')" id="tab-term">
-                <i class="ri-terminal-box-line"></i> TERMINAL
-            </div>
-            <div class="panel-tab" onclick="switchTab('graph')" id="tab-graph">
-                <i class="ri-bar-chart-box-line"></i> PREVIEW
-            </div>
+            <div class="panel-tab active" onclick="switchPanel('term')" id="pt-term">TERMINAL</div>
+            <div class="panel-tab" onclick="switchPanel('graph')" id="pt-graph">PREVIEW</div>
         </div>
-        <div class="panel-content">
-            <div id="terminal">
-                <span class="term-line">> Ready.</span>
-            </div>
-            <div id="graph-area" class="hidden">
-                <div style="color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                    <i class="ri-image-line" style="font-size: 24px;"></i>
-                    <span style="font-size: 12px;">Sem imagem</span>
+        <div class="panel-body">
+            <div id="terminal-view"><span class="term-line">> Terminal ready.</span></div>
+            <div id="preview-view" class="hidden">
+                <div style="text-align:center; color: var(--text-muted);">
+                    <i class="ri-image-line" style="font-size:32px;"></i><br>No Preview
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+        <div class="status-left">
+            <span><i class="ri-git-branch-line"></i> main</span>
+            <span id="status-problems"><i class="ri-error-warning-line"></i> 0</span>
+        </div>
+        <div class="status-right">
+            <span id="cursor-pos">Ln 1, Col 1</span>
+            <span>UTF-8</span>
+            <span>Python</span>
+        </div>
+    </div>
 
 <script>
-    // --- Theme Logic ---
-    let currentTheme = 'dark';
+    // --- VFS & State ---
+    const defaultFiles = {
+        'main.py': 'import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\nplt.plot(x, y)\nplt.title("Jade IDE Plot")\nprint("Hello from main.py!")',
+        'utils.py': 'def hello():\n    print("Hello form utils")',
+        'README.md': '# Project Jade\nBem vindo à IDE.'
+    };
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const icon = document.getElementById('themeIcon');
-        
-        if (currentTheme === 'dark') {
-            currentTheme = 'light';
-            html.setAttribute('data-theme', 'light');
-            icon.className = 'ri-sun-line';
-            if (window.monaco) monaco.editor.setTheme('jade-light');
-        } else {
-            currentTheme = 'dark';
-            html.removeAttribute('data-theme');
-            icon.className = 'ri-moon-line';
-            if (window.monaco) monaco.editor.setTheme('jade-dark');
-        }
-    }
+    let files = JSON.parse(localStorage.getItem('jade_files')) || defaultFiles;
+    let openTabs = []; // Array of filenames
+    let activeFile = null;
+    let models = {}; // filename -> monaco model
 
-    // --- Editor Setup ---
+    // --- Init ---
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-    
     require(['vs/editor/editor.main'], function() {
-        // Define Dark Theme (Grey/Zinc)
+        initMonaco();
+        renderExplorer();
+        
+        // Open main.py by default
+        if (files['main.py']) openFile('main.py');
+    });
+
+    // --- Monaco & Tabs Logic ---
+    function initMonaco() {
         monaco.editor.defineTheme('jade-dark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [],
-            colors: {
-                'editor.background': '#09090b',
-                'editor.foreground': '#e4e4e7',
-                'editorLineNumber.foreground': '#52525b',
-                'editor.lineHighlightBackground': '#27272a',
-                'editorCursor.foreground': '#10b981',
-                'editor.selectionBackground': '#10b98133'
-            }
+            base: 'vs-dark', inherit: true, rules: [],
+            colors: { 'editor.background': '#09090b', 'editor.lineHighlightBackground': '#18181b' }
         });
-
-        // Define Light Theme (Clean)
         monaco.editor.defineTheme('jade-light', {
-            base: 'vs',
-            inherit: true,
-            rules: [],
-            colors: {
-                'editor.background': '#ffffff',
-                'editor.foreground': '#0f172a',
-                'editorLineNumber.foreground': '#94a3b8',
-                'editor.lineHighlightBackground': '#f1f5f9',
-                'editorCursor.foreground': '#059669',
-                'editor.selectionBackground': '#05966922'
-            }
+            base: 'vs', inherit: true, rules: [],
+            colors: { 'editor.background': '#ffffff' }
         });
 
-        window.editor = monaco.editor.create(document.getElementById('editor-container'), {
-            value: 'import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\ny = np.cos(x)\n\nplt.plot(x, y, color="#10b981")\nplt.title("Jade Graph")\nprint("Done!")',
-            language: 'python',
-            theme: 'jade-dark', // Default
+        window.editor = monaco.editor.create(document.getElementById('monaco-container'), {
+            theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'jade-light' : 'jade-dark',
             automaticLayout: true,
             fontFamily: 'JetBrains Mono',
             fontSize: 13,
-            minimap: { enabled: false },
-            padding: { top: 16 },
-            scrollBeyondLastLine: false,
-            renderLineHighlight: 'all'
+            minimap: { enabled: false }
         });
-    });
 
-    // --- Tab Logic ---
-    function switchTab(tab) {
-        document.getElementById('tab-term').classList.toggle('active', tab === 'term');
-        document.getElementById('tab-graph').classList.toggle('active', tab === 'graph');
+        // Update status bar on change
+        window.editor.onDidChangeCursorPosition((e) => {
+            document.getElementById('cursor-pos').innerText = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+        });
         
-        const term = document.getElementById('terminal');
-        const graph = document.getElementById('graph-area');
+        // Save on change
+        window.editor.onDidChangeModelContent(() => {
+            if (activeFile) {
+                files[activeFile] = window.editor.getValue();
+                localStorage.setItem('jade_files', JSON.stringify(files));
+            }
+        });
+    }
+
+    function getLanguage(filename) {
+        if (filename.endsWith('.py')) return 'python';
+        if (filename.endsWith('.md')) return 'markdown';
+        if (filename.endsWith('.js')) return 'javascript';
+        if (filename.endsWith('.html')) return 'html';
+        return 'plaintext';
+    }
+
+    function openFile(filename) {
+        if (!models[filename]) {
+            models[filename] = monaco.editor.createModel(files[filename], getLanguage(filename));
+        }
         
-        if (tab === 'term') {
-            term.classList.remove('hidden');
-            graph.classList.add('hidden');
-        } else {
-            term.classList.add('hidden');
-            graph.classList.remove('hidden');
-            graph.style.display = 'flex';
+        if (!openTabs.includes(filename)) {
+            openTabs.push(filename);
+        }
+        
+        activeFile = filename;
+        window.editor.setModel(models[filename]);
+        renderTabs();
+        renderExplorer(); // Update active highlight
+    }
+
+    function closeTab(filename, e) {
+        if (e) e.stopPropagation();
+        openTabs = openTabs.filter(t => t !== filename);
+        
+        if (openTabs.length === 0) {
+            activeFile = null;
+            window.editor.setModel(null);
+        } else if (activeFile === filename) {
+            openFile(openTabs[openTabs.length - 1]);
+        }
+        renderTabs();
+    }
+
+    function renderTabs() {
+        const container = document.getElementById('tabs-container');
+        container.innerHTML = '';
+        openTabs.forEach(file => {
+            const div = document.createElement('div');
+            div.className = `tab ${file === activeFile ? 'active' : ''}`;
+            div.innerHTML = `<i class="ri-file-code-line"></i> ${file} <i class="ri-close-line close-icon" onclick="closeTab('${file}', event)"></i>`;
+            div.onclick = () => openFile(file);
+            container.appendChild(div);
+        });
+    }
+
+    function renderExplorer() {
+        const container = document.getElementById('file-tree');
+        container.innerHTML = '';
+        Object.keys(files).forEach(file => {
+            const div = document.createElement('div');
+            div.className = `file-item ${file === activeFile ? 'active' : ''}`;
+            div.innerHTML = `<i class="ri-file-code-line"></i> ${file}`;
+            div.onclick = () => openFile(file);
+            container.appendChild(div);
+        });
+    }
+
+    function createNewFile() {
+        const name = prompt("Nome do arquivo (ex: script.py):");
+        if (name && !files[name]) {
+            files[name] = "";
+            localStorage.setItem('jade_files', JSON.stringify(files));
+            openFile(name);
+            renderExplorer();
+        }
+    }
+    
+    function resetFiles() {
+        if(confirm("Resetar arquivos para o padrão?")) {
+            files = JSON.parse(JSON.stringify(defaultFiles)); // deep copy
+            localStorage.setItem('jade_files', JSON.stringify(files));
+            location.reload();
         }
     }
 
+    // --- Layout & Logic ---
+    function switchSidebar(view) {
+        document.querySelectorAll('.sidebar-view').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${view}`).classList.add('active');
+        
+        document.querySelectorAll('.activity-item').forEach(el => el.classList.remove('active'));
+        // Find the element that called this or matching icon logic - crude check:
+        const items = document.querySelectorAll('.activity-item');
+        if (view === 'explorer') items[0].classList.add('active');
+        if (view === 'chat') items[1].classList.add('active');
+    }
+    
+    function switchPanel(tab) {
+        const term = document.getElementById('terminal-view');
+        const prev = document.getElementById('preview-view');
+        const tTab = document.getElementById('pt-term');
+        const pTab = document.getElementById('pt-graph');
+        
+        if (tab === 'term') {
+            term.style.display = 'block';
+            prev.classList.add('hidden');
+            tTab.classList.add('active');
+            pTab.classList.remove('active');
+        } else {
+            term.style.display = 'none';
+            prev.classList.remove('hidden');
+            tTab.classList.remove('active');
+            pTab.classList.add('active');
+        }
+    }
+
+    // --- API Logic (Run/Chat) ---
     function logToTerminal(text, type='out') {
-        const term = document.getElementById('terminal');
-        const span = document.createElement('span');
-        span.className = 'term-line';
-        if (type === 'err') span.classList.add('term-err');
-        if (type === 'info') span.classList.add('term-info');
-        span.innerText = text;
-        term.appendChild(span);
+        const term = document.getElementById('terminal-view');
+        const div = document.createElement('div');
+        div.className = 'term-line';
+        if(type==='err') div.style.color = '#ef4444';
+        div.innerText = text;
+        term.appendChild(div);
         term.scrollTop = term.scrollHeight;
     }
 
-    // --- Run Logic ---
     async function runCode() {
+        if (!activeFile) return;
+        
         const btn = document.getElementById('runBtn');
         const urlField = document.getElementById('apiUrl');
-        const originalContent = btn.innerHTML;
+        const baseUrl = urlField.value.trim().replace(/\/$/, "");
         
-        let baseUrl = urlField.value.trim();
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-        
-        if (!baseUrl) { 
-            alert("Cole o URL do ngrok na lateral!"); 
-            urlField.focus();
-            return; 
-        }
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
-        
-        switchTab('term'); 
-        logToTerminal("> Running...", 'info');
+        if (!baseUrl) { switchSidebar('chat'); alert("Configure o URL no painel Chat"); return; }
 
+        btn.disabled = true;
+        switchPanel('term');
+        logToTerminal(`> Running ${activeFile}...`);
+        
         try {
-            const response = await fetch(baseUrl + "/run", {
+            const res = await fetch(baseUrl + "/run", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
                 body: JSON.stringify({ code: window.editor.getValue() })
             });
-            
-            const data = await response.json();
+            const data = await res.json();
             
             if (data.error) logToTerminal(data.error, 'err');
             if (data.output) logToTerminal(data.output);
             
             if (data.image) {
-                const graphArea = document.getElementById('graph-area');
-                graphArea.innerHTML = `<img src="data:image/png;base64,${data.image}" />`;
-                logToTerminal("> Graph updated.", 'info');
-                switchTab('graph');
+                const prev = document.getElementById('preview-view');
+                prev.innerHTML = `<img src="data:image/png;base64,${data.image}">`;
+                switchPanel('graph');
+                logToTerminal("> Graph generated.");
             }
-        } catch (e) {
+        } catch(e) {
             logToTerminal("Error: " + e.message, 'err');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = originalContent;
         }
-    }
-
-    // --- Chat Logic ---
-    function appendMessage(role, content, isHtml = false) {
-        const history = document.getElementById('chat-history');
-        const group = document.createElement('div');
-        group.className = 'message-group';
-        
-        const avatar = document.createElement('div');
-        avatar.className = `avatar ${role}`;
-        avatar.innerHTML = role === 'bot' ? '<i class="ri-robot-2-line"></i>' : '<i class="ri-user-3-line"></i>';
-        
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-        
-        if (isHtml) {
-            bubble.innerHTML = content;
-        } else {
-            bubble.innerText = content;
-        }
-        
-        group.appendChild(avatar);
-        group.appendChild(bubble);
-        history.appendChild(group);
-        history.scrollTop = history.scrollHeight;
     }
 
     async function sendMessage() {
         const input = document.getElementById('userInput');
         const urlField = document.getElementById('apiUrl');
         const msg = input.value.trim();
+        const baseUrl = urlField.value.trim().replace(/\/$/, "");
         
-        let baseUrl = urlField.value.trim();
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+        if (!msg) return;
         
-        if(!msg) return;
-        
-        appendMessage('user', msg);
+        const history = document.getElementById('chat-history');
+        // User Msg
+        const uDiv = document.createElement('div');
+        uDiv.className = 'message-group';
+        uDiv.innerHTML = `<div class="avatar user"><i class="ri-user-3-line"></i></div><div class="bubble">${msg}</div>`;
+        history.appendChild(uDiv);
         input.value = '';
 
         if (!baseUrl) {
-             appendMessage('bot', "⚠️ Configure o ngrok para conectar.");
-             return;
+            const eDiv = document.createElement('div');
+            eDiv.className = 'message-group';
+            eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">Conecte o ngrok acima.</div>`;
+            history.appendChild(eDiv);
+            return;
         }
-        
+
         try {
             const res = await fetch(baseUrl + "/chat", {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true'},
-                body: JSON.stringify({ message: msg, current_file_content: window.editor.getValue() })
+                body: JSON.stringify({ message: msg, current_file_content: window.editor ? window.editor.getValue() : "" })
             });
             const data = await res.json();
             
-            let formatted = data.response
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/\n/g, "<br>");
-                
+            const bDiv = document.createElement('div');
+            bDiv.className = 'message-group';
+            
+            // Basic formatting
+            let text = data.response.replace(/\n/g, "<br>");
+            // Code block extraction (simple)
             const codeRegex = /```(?:python)?\s*([\s\S]*?)```/;
             const match = data.response.match(codeRegex);
+            let codeBtn = '';
             
             if (match) {
                 const code = match[1];
-                formatted = data.response.replace(codeRegex, 
-                    `<div class="code-snippet">${code.replace(/</g, "&lt;")}</div>
-                     <button class="apply-btn" onclick="applyCode(this)">
-                        <i class="ri-flashlight-fill"></i> Aplicar
-                     </button>`
-                ).replace(/\n/g, "<br>");
-                
-                setTimeout(() => {
-                    const btns = document.querySelectorAll('.apply-btn');
-                    const lastBtn = btns[btns.length - 1];
-                    if(lastBtn) lastBtn.dataset.code = code;
-                }, 100);
+                text = data.response.replace(codeRegex, `<div class="code-block">${code.replace(/</g,"&lt;")}</div>`);
+                codeBtn = `<button class="icon-btn" onclick="applyCodeFromChat(this)" style="font-size:11px; margin-top:5px; border:1px solid var(--border); padding:2px 6px;">Aplicar no Editor</button>`;
+                // Hack to store code
+                setTimeout(() => { bDiv.dataset.code = code; }, 100);
             }
-            
-            appendMessage('bot', formatted, true);
 
-        } catch(e) { 
-            appendMessage('bot', "Erro: " + e.message);
+            bDiv.innerHTML = `<div class="avatar bot"><i class="ri-robot-2-line"></i></div><div class="bubble">${text}${codeBtn}</div>`;
+            history.appendChild(bDiv);
+            history.scrollTop = history.scrollHeight;
+
+        } catch (e) {
+            console.error(e);
         }
     }
     
-    function applyCode(btn) {
-        const code = btn.dataset.code;
-        if (code && window.editor) {
+    function applyCodeFromChat(btn) {
+        const parent = btn.closest('.message-group');
+        const code = parent.dataset.code;
+        if (code && activeFile) {
             window.editor.setValue(code);
-            logToTerminal("> Código aplicado.", 'info');
         }
     }
 
-    document.getElementById('userInput').addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') sendMessage();
+    function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.getAttribute('data-theme') !== 'light';
+        html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeIcon').className = isDark ? 'ri-sun-line' : 'ri-moon-line';
+        if (window.editor) window.editor.updateOptions({ theme: isDark ? 'jade-light' : 'jade-dark' });
+    }
+    
+    // Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            if (document.activeElement.id === 'userInput') sendMessage();
+            else runCode();
+        }
     });
-</script>
 
+</script>
 </body>
 </html>
