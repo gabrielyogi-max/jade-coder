@@ -565,6 +565,19 @@
             <div class="sidebar-header">Jade AI <span id="connection-status"
                     style="font-size:9px; color:var(--text-muted);">●</span></div>
             <div class="chat-config">
+                <!-- Provider & Model -->
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <select id="providerSelect" onchange="onProviderChange()"
+                        style="flex:1; background:var(--bg-activity); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:4px; font-size:11px;">
+                        <option value="groq">Groq</option>
+                        <option value="cerebras">Cerebras</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+                    <select id="modelSelect"
+                        style="flex:2; background:var(--bg-activity); border:1px solid var(--border); color:var(--text-main); padding:4px 8px; border-radius:4px; font-size:11px;">
+                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                    </select>
+                </div>
                 <!-- Backend URL -->
                 <div class="chat-input-wrapper" style="margin-bottom:8px;">
                     <i class="ri-server-line" style="color:var(--text-muted); margin-right:5px;"></i>
@@ -576,13 +589,13 @@
                 <!-- API Key (BYOK) -->
                 <div class="chat-input-wrapper">
                     <i class="ri-key-2-line" style="color:var(--text-muted); margin-right:5px;"></i>
-                    <input type="password" id="apiKey" placeholder="Sua API Key do Groq..." autocomplete="off">
+                    <input type="password" id="apiKey" placeholder="Sua API Key..." autocomplete="off">
                     <button class="icon-btn" onclick="toggleKeyVisibility()" title="Mostrar/Esconder"><i
                             class="ri-eye-line" id="keyEyeIcon"></i></button>
                     <button class="icon-btn" onclick="saveApiKey()" title="Salvar"><i class="ri-save-line"></i></button>
                 </div>
                 <div style="font-size:10px; color:var(--text-muted); margin-top:4px; padding:0 4px;">
-                    🔒 Sua key fica salva apenas no seu navegador
+                    🔒 Key salva no navegador | 🤖 Modo Agêntico
                 </div>
             </div>
             <div id="chat-history">
@@ -889,10 +902,14 @@
             if (!apiKey) {
                 const eDiv = document.createElement('div');
                 eDiv.className = 'message-group';
-                eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">🔑 Configure sua API Key do Groq acima.</div>`;
+                eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">🔑 Configure sua API Key acima.</div>`;
                 history.appendChild(eDiv);
                 return;
             }
+
+            // Get provider and model
+            const provider = document.getElementById('providerSelect').value;
+            const model = document.getElementById('modelSelect').value;
 
             try {
                 const res = await fetch(baseUrl + "/chat", {
@@ -901,7 +918,14 @@
                         'Content-Type': 'application/json',
                         'X-API-Key': apiKey
                     },
-                    body: JSON.stringify({ message: msg, current_file_content: window.editor ? window.editor.getValue() : "" })
+                    body: JSON.stringify({
+                        message: msg,
+                        provider: provider,
+                        model: model,
+                        files: files,  // All project files
+                        current_file: activeFile,
+                        agentic: true
+                    })
                 });
 
                 if (res.status === 401) {
@@ -1114,6 +1138,55 @@
 
         // Load saved key on page load
         setTimeout(loadSavedApiKey, 100);
+
+        // === PROVIDER/MODEL MANAGEMENT ===
+        const MODEL_CACHE = {
+            groq: [
+                { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B" },
+                { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B (Fast)" },
+                { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B" },
+            ],
+            cerebras: [
+                { id: "llama3.1-70b", name: "Llama 3.1 70B" },
+                { id: "llama3.1-8b", name: "Llama 3.1 8B (Ultra Fast)" },
+            ],
+            openrouter: [
+                { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
+                { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash (Free)" },
+                { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B" },
+                { id: "deepseek/deepseek-chat", name: "DeepSeek V3" },
+                { id: "qwen/qwen-2.5-coder-32b-instruct", name: "Qwen 2.5 Coder 32B" },
+            ]
+        };
+
+        function onProviderChange() {
+            const provider = document.getElementById('providerSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            const models = MODEL_CACHE[provider] || [];
+
+            modelSelect.innerHTML = '';
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name;
+                modelSelect.appendChild(opt);
+            });
+
+            // Save selection
+            localStorage.setItem('jade_provider', provider);
+            logToTerminal(`📦 Provider: ${provider}`);
+        }
+
+        function loadSavedProvider() {
+            const savedProvider = localStorage.getItem('jade_provider');
+            if (savedProvider) {
+                document.getElementById('providerSelect').value = savedProvider;
+                onProviderChange();
+            }
+        }
+
+        // Load saved provider on page load
+        setTimeout(loadSavedProvider, 200);
 
     </script>
 </body>
