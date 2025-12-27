@@ -910,6 +910,15 @@
 
                 const data = await res.json();
 
+                // Check for error response
+                if (data.detail) {
+                    throw new Error(data.detail);
+                }
+
+                if (!data.response) {
+                    throw new Error('Resposta vazia do servidor');
+                }
+
                 const bDiv = document.createElement('div');
                 bDiv.className = 'message-group';
 
