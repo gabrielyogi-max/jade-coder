@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jade Code IDE</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
+
     <!-- Monaco -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
@@ -20,26 +23,33 @@
     <style>
         :root {
             /* --- Dark Theme (Zinc/Slate) --- */
-            --bg-activity: #18181b;     /* Activity Bar */
-            --bg-sidebar: #09090b;      /* Sidebar / Explorer */
-            --bg-editor: #09090b;       /* Editor Main */
-            --bg-panel: #09090b;        /* Bottom Panel */
-            --bg-status: #10b981;       /* Status Bar (Accent) */
-            --bg-tab: #09090b;          /* Inactive Tab */
-            --bg-tab-active: #09090b;   /* Active Tab */
-            
+            --bg-activity: #18181b;
+            /* Activity Bar */
+            --bg-sidebar: #09090b;
+            /* Sidebar / Explorer */
+            --bg-editor: #09090b;
+            /* Editor Main */
+            --bg-panel: #09090b;
+            /* Bottom Panel */
+            --bg-status: #10b981;
+            /* Status Bar (Accent) */
+            --bg-tab: #09090b;
+            /* Inactive Tab */
+            --bg-tab-active: #09090b;
+            /* Active Tab */
+
             --border: #27272a;
             --border-highlight: #3f3f46;
-            
+
             --primary: #10b981;
             --primary-dim: rgba(16, 185, 129, 0.1);
-            
+
             --text-main: #e4e4e7;
             --text-muted: #71717a;
-            
+
             --font-ui: 'Inter', sans-serif;
             --font-code: 'JetBrains Mono', monospace;
-            
+
             --icon-size: 20px;
         }
 
@@ -51,25 +61,32 @@
             --bg-status: #059669;
             --bg-tab: #f1f5f9;
             --bg-tab-active: #ffffff;
-            
+
             --border: #cbd5e1;
             --border-highlight: #94a3b8;
-            
+
             --primary: #059669;
             --primary-dim: rgba(5, 150, 105, 0.1);
-            
+
             --text-main: #0f172a;
             --text-muted: #64748b;
         }
 
-        * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
-        
+        * {
+            box-sizing: border-box;
+            outline: none;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            height: 100vh; overflow: hidden;
-            background: var(--bg-editor); color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg-editor);
+            color: var(--text-main);
             font-family: var(--font-ui);
             display: grid;
-            grid-template-areas: 
+            grid-template-areas:
                 "activity sidebar editor editor"
                 "activity sidebar panel panel"
                 "status status status status";
@@ -82,176 +99,434 @@
             grid-area: activity;
             background: var(--bg-activity);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center; padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 10px;
             z-index: 30;
         }
+
         .activity-item {
-            width: 48px; height: 48px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); cursor: pointer;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
             border-left: 2px solid transparent;
             transition: 0.2s;
         }
-        .activity-item i { font-size: 24px; }
-        .activity-item:hover { color: var(--text-main); }
-        .activity-item.active { color: var(--primary); border-left-color: var(--primary); }
-        
-        .spacer { flex: 1; }
-        .activity-bottom { margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }
+
+        .activity-item i {
+            font-size: 24px;
+        }
+
+        .activity-item:hover {
+            color: var(--text-main);
+        }
+
+        .activity-item.active {
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .activity-bottom {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
         /* --- 2. Sidebar (Explorer/Chat) --- */
         #sidebar {
             grid-area: sidebar;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border);
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
-        
+
         .sidebar-header {
-            height: 35px; padding: 0 16px;
-            display: flex; align-items: center; justify-content: space-between;
-            font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+            height: 35px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-muted);
             border-bottom: 1px solid var(--border);
         }
-        
+
         /* Sidebar Views */
-        .sidebar-view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
-        .sidebar-view.active { display: flex; }
+        .sidebar-view {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-view.active {
+            display: flex;
+        }
 
         /* File Explorer Styles */
-        .file-tree { padding: 10px 0; overflow-y: auto; }
+        .file-tree {
+            padding: 10px 0;
+            overflow-y: auto;
+        }
+
         .file-item {
-            padding: 6px 16px; cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13px; color: var(--text-main);
+            padding: 6px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-main);
             border-left: 2px solid transparent;
         }
-        .file-item:hover { background: var(--primary-dim); }
-        .file-item.active { background: var(--primary-dim); border-left-color: var(--primary); color: var(--primary); }
-        .file-item i { font-size: 16px; color: var(--text-muted); }
-        
-        .explorer-actions {
-            padding: 10px 16px; border-bottom: 1px solid var(--border);
-            display: flex; gap: 8px;
+
+        .file-item:hover {
+            background: var(--primary-dim);
         }
+
+        .file-item.active {
+            background: var(--primary-dim);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .file-item i {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        .explorer-actions {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+        }
+
         .icon-btn {
-            background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
             transition: 0.2s;
         }
-        .icon-btn:hover { color: var(--text-main); }
+
+        .icon-btn:hover {
+            color: var(--text-main);
+        }
 
         /* Chat Styles (Adapted) */
-        .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .chat-config { padding: 10px; border-bottom: 1px solid var(--border); }
-        .chat-input-wrapper {
-            background: var(--bg-activity); border: 1px solid var(--border);
-            border-radius: 4px; display: flex; align-items: center; padding: 4px 8px;
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .chat-input-wrapper input { background: transparent; border: none; color: var(--text-main); width: 100%; font-size: 12px; }
-        
-        #chat-history { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .message-group { display: flex; gap: 10px; font-size: 13px; }
-        .avatar { width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .avatar.bot { background: var(--bg-activity); color: var(--primary); border: 1px solid var(--border); }
-        .avatar.user { background: var(--primary); color: white; }
-        .bubble { flex: 1; line-height: 1.5; word-wrap: break-word; }
-        .code-block { background: var(--bg-activity); border: 1px solid var(--border); padding: 8px; margin-top: 5px; border-radius: 4px; font-family: var(--font-code); font-size: 12px; }
-        
-        .chat-composer { padding: 10px; border-top: 1px solid var(--border); background: var(--bg-sidebar); }
+
+        .chat-config {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chat-input-wrapper {
+            background: var(--bg-activity);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+        }
+
+        .chat-input-wrapper input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 12px;
+        }
+
+        #chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-group {
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .avatar.bot {
+            background: var(--bg-activity);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .avatar.user {
+            background: var(--primary);
+            color: white;
+        }
+
+        .bubble {
+            flex: 1;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .code-block {
+            background: var(--bg-activity);
+            border: 1px solid var(--border);
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-family: var(--font-code);
+            font-size: 12px;
+        }
+
+        .chat-composer {
+            padding: 10px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-sidebar);
+        }
+
         textarea.chat-box {
-            width: 100%; height: 60px; background: var(--bg-activity); border: 1px solid var(--border);
-            color: var(--text-main); padding: 8px; resize: none; border-radius: 4px; font-family: var(--font-ui);
+            width: 100%;
+            height: 60px;
+            background: var(--bg-activity);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px;
+            resize: none;
+            border-radius: 4px;
+            font-family: var(--font-ui);
         }
 
         /* --- 3. Editor Area --- */
         #editor-area {
             grid-area: editor;
             background: var(--bg-editor);
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
             position: relative;
         }
-        
+
         .tabs-header {
-            height: 35px; background: var(--bg-activity);
-            display: flex; align-items: center; overflow-x: auto;
+            height: 35px;
+            background: var(--bg-activity);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
             border-bottom: 1px solid var(--border);
         }
-        
+
         .tab {
-            height: 100%; padding: 0 15px;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 12px; color: var(--text-muted); cursor: pointer;
-            background: var(--bg-tab); border-right: 1px solid var(--border);
-            min-width: 120px; max-width: 200px;
+            height: 100%;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            background: var(--bg-tab);
+            border-right: 1px solid var(--border);
+            min-width: 120px;
+            max-width: 200px;
         }
-        .tab.active { background: var(--bg-editor); color: var(--primary); border-top: 2px solid var(--primary); }
-        .tab .close-icon { margin-left: auto; font-size: 14px; opacity: 0; transition: 0.2s; }
-        .tab:hover .close-icon { opacity: 1; }
-        .tab .close-icon:hover { color: #ef4444; }
+
+        .tab.active {
+            background: var(--bg-editor);
+            color: var(--primary);
+            border-top: 2px solid var(--primary);
+        }
+
+        .tab .close-icon {
+            margin-left: auto;
+            font-size: 14px;
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .tab:hover .close-icon {
+            opacity: 1;
+        }
+
+        .tab .close-icon:hover {
+            color: #ef4444;
+        }
 
         .editor-actions {
-            position: absolute; top: 5px; right: 20px; z-index: 10;
+            position: absolute;
+            top: 5px;
+            right: 20px;
+            z-index: 10;
         }
-        .run-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .run-btn:hover { background: #059669; }
 
-        #monaco-container { flex: 1; }
+        .run-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .run-btn:hover {
+            background: #059669;
+        }
+
+        #monaco-container {
+            flex: 1;
+        }
 
         /* --- 4. Panel (Terminal) --- */
         #bottom-panel {
             grid-area: panel;
             background: var(--bg-panel);
             border-top: 1px solid var(--border);
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .panel-header {
-            height: 30px; padding: 0 10px; display: flex; gap: 20px;
+            height: 30px;
+            padding: 0 10px;
+            display: flex;
+            gap: 20px;
             border-bottom: 1px solid var(--border);
         }
+
         .panel-tab {
-            height: 100%; display: flex; align-items: center;
-            font-size: 11px; text-transform: uppercase; cursor: pointer;
-            color: var(--text-muted); border-bottom: 2px solid transparent;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
         }
-        .panel-tab.active { color: var(--text-main); border-bottom-color: var(--primary); }
-        
-        .panel-body { flex: 1; position: relative; overflow: hidden; }
-        #terminal-view, #preview-view {
-            position: absolute; inset: 0; padding: 10px; overflow: auto;
-            font-family: var(--font-code); font-size: 12px;
+
+        .panel-tab.active {
+            color: var(--text-main);
+            border-bottom-color: var(--primary);
         }
-        .term-line { display: block; margin-bottom: 2px; color: var(--text-muted); }
-        .term-err { color: #ef4444; }
-        
-        #preview-view { display: none; background: var(--bg-editor); display: flex; align-items: center; justify-content: center; }
-        #preview-view.hidden { display: none !important; }
-        #preview-view img { max-width: 90%; max-height: 90%; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        .panel-body {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #terminal-view,
+        #preview-view {
+            position: absolute;
+            inset: 0;
+            padding: 10px;
+            overflow: auto;
+            font-family: var(--font-code);
+            font-size: 12px;
+        }
+
+        .term-line {
+            display: block;
+            margin-bottom: 2px;
+            color: var(--text-muted);
+        }
+
+        .term-err {
+            color: #ef4444;
+        }
+
+        #preview-view {
+            display: none;
+            background: var(--bg-editor);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #preview-view.hidden {
+            display: none !important;
+        }
+
+        #preview-view img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
 
         /* --- 5. Status Bar --- */
         #status-bar {
             grid-area: status;
             background: var(--bg-status);
             color: white;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 11px;
         }
-        .status-left, .status-right { display: flex; gap: 15px; }
+
+        .status-left,
+        .status-right {
+            display: flex;
+            gap: 15px;
+        }
 
         /* Utils */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-highlight); border-radius: 4px; }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-highlight);
+            border-radius: 4px;
+        }
     </style>
 </head>
+
 <body>
 
     <!-- Activity Bar -->
@@ -276,7 +551,8 @@
         <div id="view-explorer" class="sidebar-view active">
             <div class="sidebar-header">Explorador</div>
             <div class="explorer-actions">
-                <button class="icon-btn" onclick="createNewFile()" title="Novo Arquivo"><i class="ri-file-add-line"></i></button>
+                <button class="icon-btn" onclick="createNewFile()" title="Novo Arquivo"><i
+                        class="ri-file-add-line"></i></button>
                 <button class="icon-btn" onclick="resetFiles()" title="Resetar"><i class="ri-refresh-line"></i></button>
             </div>
             <div class="file-tree" id="file-tree">
@@ -286,11 +562,26 @@
 
         <!-- Chat View -->
         <div id="view-chat" class="sidebar-view">
-            <div class="sidebar-header">Jade AI</div>
+            <div class="sidebar-header">Jade AI <span id="connection-status"
+                    style="font-size:9px; color:var(--text-muted);">●</span></div>
             <div class="chat-config">
+                <!-- Backend URL -->
+                <div class="chat-input-wrapper" style="margin-bottom:8px;">
+                    <i class="ri-server-line" style="color:var(--text-muted); margin-right:5px;"></i>
+                    <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="URL do servidor...">
+                    <button class="icon-btn" onclick="checkConnection()" title="Testar conexão"><i
+                            class="ri-refresh-line"></i></button>
+                </div>
+                <!-- API Key (BYOK) -->
                 <div class="chat-input-wrapper">
-                    <i class="ri-link-m" style="color:var(--text-muted); margin-right:5px;"></i>
-                    <input type="text" id="apiUrl" placeholder="Link do ngrok...">
+                    <i class="ri-key-2-line" style="color:var(--text-muted); margin-right:5px;"></i>
+                    <input type="password" id="apiKey" placeholder="Sua API Key do Groq..." autocomplete="off">
+                    <button class="icon-btn" onclick="toggleKeyVisibility()" title="Mostrar/Esconder"><i
+                            class="ri-eye-line" id="keyEyeIcon"></i></button>
+                    <button class="icon-btn" onclick="saveApiKey()" title="Salvar"><i class="ri-save-line"></i></button>
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px; padding:0 4px;">
+                    🔒 Sua key fica salva apenas no seu navegador
                 </div>
             </div>
             <div id="chat-history">
@@ -301,7 +592,8 @@
             </div>
             <div class="chat-composer">
                 <textarea class="chat-box" id="userInput" placeholder="Digite sua mensagem... (Ctrl+Enter)"></textarea>
-                <button class="run-btn" style="width:100%; margin-top:5px; justify-content:center;" onclick="sendMessage()">Enviar</button>
+                <button class="run-btn" style="width:100%; margin-top:5px; justify-content:center;"
+                    onclick="sendMessage()">Enviar</button>
             </div>
         </div>
     </div>
@@ -348,302 +640,472 @@
         </div>
     </div>
 
-<script>
-    // --- VFS & State ---
-    const defaultFiles = {
-        'main.py': 'import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\nplt.plot(x, y)\nplt.title("Jade IDE Plot")\nprint("Hello from main.py!")',
-        'utils.py': 'def hello():\n    print("Hello form utils")',
-        'README.md': '# Project Jade\nBem vindo à IDE.'
-    };
+    <script>
+        // --- VFS & State ---
+        const defaultFiles = {
+            'main.py': 'import matplotlib.pyplot as plt\nimport numpy as np\n\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\n\nplt.plot(x, y)\nplt.title("Jade IDE Plot")\nprint("Hello from main.py!")',
+            'utils.py': 'def hello():\n    print("Hello form utils")',
+            'README.md': '# Project Jade\nBem vindo à IDE.'
+        };
 
-    let files = JSON.parse(localStorage.getItem('jade_files')) || defaultFiles;
-    let openTabs = []; // Array of filenames
-    let activeFile = null;
-    let models = {}; // filename -> monaco model
+        let files = JSON.parse(localStorage.getItem('jade_files')) || defaultFiles;
+        let openTabs = []; // Array of filenames
+        let activeFile = null;
+        let models = {}; // filename -> monaco model
 
-    // --- Init ---
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-    require(['vs/editor/editor.main'], function() {
-        initMonaco();
-        renderExplorer();
-        
-        // Open main.py by default
-        if (files['main.py']) openFile('main.py');
-    });
-
-    // --- Monaco & Tabs Logic ---
-    function initMonaco() {
-        monaco.editor.defineTheme('jade-dark', {
-            base: 'vs-dark', inherit: true, rules: [],
-            colors: { 'editor.background': '#09090b', 'editor.lineHighlightBackground': '#18181b' }
-        });
-        monaco.editor.defineTheme('jade-light', {
-            base: 'vs', inherit: true, rules: [],
-            colors: { 'editor.background': '#ffffff' }
-        });
-
-        window.editor = monaco.editor.create(document.getElementById('monaco-container'), {
-            theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'jade-light' : 'jade-dark',
-            automaticLayout: true,
-            fontFamily: 'JetBrains Mono',
-            fontSize: 13,
-            minimap: { enabled: false }
-        });
-
-        // Update status bar on change
-        window.editor.onDidChangeCursorPosition((e) => {
-            document.getElementById('cursor-pos').innerText = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
-        });
-        
-        // Save on change
-        window.editor.onDidChangeModelContent(() => {
-            if (activeFile) {
-                files[activeFile] = window.editor.getValue();
-                localStorage.setItem('jade_files', JSON.stringify(files));
-            }
-        });
-    }
-
-    function getLanguage(filename) {
-        if (filename.endsWith('.py')) return 'python';
-        if (filename.endsWith('.md')) return 'markdown';
-        if (filename.endsWith('.js')) return 'javascript';
-        if (filename.endsWith('.html')) return 'html';
-        return 'plaintext';
-    }
-
-    function openFile(filename) {
-        if (!models[filename]) {
-            models[filename] = monaco.editor.createModel(files[filename], getLanguage(filename));
-        }
-        
-        if (!openTabs.includes(filename)) {
-            openTabs.push(filename);
-        }
-        
-        activeFile = filename;
-        window.editor.setModel(models[filename]);
-        renderTabs();
-        renderExplorer(); // Update active highlight
-    }
-
-    function closeTab(filename, e) {
-        if (e) e.stopPropagation();
-        openTabs = openTabs.filter(t => t !== filename);
-        
-        if (openTabs.length === 0) {
-            activeFile = null;
-            window.editor.setModel(null);
-        } else if (activeFile === filename) {
-            openFile(openTabs[openTabs.length - 1]);
-        }
-        renderTabs();
-    }
-
-    function renderTabs() {
-        const container = document.getElementById('tabs-container');
-        container.innerHTML = '';
-        openTabs.forEach(file => {
-            const div = document.createElement('div');
-            div.className = `tab ${file === activeFile ? 'active' : ''}`;
-            div.innerHTML = `<i class="ri-file-code-line"></i> ${file} <i class="ri-close-line close-icon" onclick="closeTab('${file}', event)"></i>`;
-            div.onclick = () => openFile(file);
-            container.appendChild(div);
-        });
-    }
-
-    function renderExplorer() {
-        const container = document.getElementById('file-tree');
-        container.innerHTML = '';
-        Object.keys(files).forEach(file => {
-            const div = document.createElement('div');
-            div.className = `file-item ${file === activeFile ? 'active' : ''}`;
-            div.innerHTML = `<i class="ri-file-code-line"></i> ${file}`;
-            div.onclick = () => openFile(file);
-            container.appendChild(div);
-        });
-    }
-
-    function createNewFile() {
-        const name = prompt("Nome do arquivo (ex: script.py):");
-        if (name && !files[name]) {
-            files[name] = "";
-            localStorage.setItem('jade_files', JSON.stringify(files));
-            openFile(name);
+        // --- Init ---
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            initMonaco();
             renderExplorer();
-        }
-    }
-    
-    function resetFiles() {
-        if(confirm("Resetar arquivos para o padrão?")) {
-            files = JSON.parse(JSON.stringify(defaultFiles)); // deep copy
-            localStorage.setItem('jade_files', JSON.stringify(files));
-            location.reload();
-        }
-    }
 
-    // --- Layout & Logic ---
-    function switchSidebar(view) {
-        document.querySelectorAll('.sidebar-view').forEach(el => el.classList.remove('active'));
-        document.getElementById(`view-${view}`).classList.add('active');
-        
-        document.querySelectorAll('.activity-item').forEach(el => el.classList.remove('active'));
-        // Find the element that called this or matching icon logic - crude check:
-        const items = document.querySelectorAll('.activity-item');
-        if (view === 'explorer') items[0].classList.add('active');
-        if (view === 'chat') items[1].classList.add('active');
-    }
-    
-    function switchPanel(tab) {
-        const term = document.getElementById('terminal-view');
-        const prev = document.getElementById('preview-view');
-        const tTab = document.getElementById('pt-term');
-        const pTab = document.getElementById('pt-graph');
-        
-        if (tab === 'term') {
-            term.style.display = 'block';
-            prev.classList.add('hidden');
-            tTab.classList.add('active');
-            pTab.classList.remove('active');
-        } else {
-            term.style.display = 'none';
-            prev.classList.remove('hidden');
-            tTab.classList.remove('active');
-            pTab.classList.add('active');
-        }
-    }
+            // Open main.py by default
+            if (files['main.py']) openFile('main.py');
+        });
 
-    // --- API Logic (Run/Chat) ---
-    function logToTerminal(text, type='out') {
-        const term = document.getElementById('terminal-view');
-        const div = document.createElement('div');
-        div.className = 'term-line';
-        if(type==='err') div.style.color = '#ef4444';
-        div.innerText = text;
-        term.appendChild(div);
-        term.scrollTop = term.scrollHeight;
-    }
-
-    async function runCode() {
-        if (!activeFile) return;
-        
-        const btn = document.getElementById('runBtn');
-        const urlField = document.getElementById('apiUrl');
-        const baseUrl = urlField.value.trim().replace(/\/$/, "");
-        
-        if (!baseUrl) { switchSidebar('chat'); alert("Configure o URL no painel Chat"); return; }
-
-        btn.disabled = true;
-        switchPanel('term');
-        logToTerminal(`> Running ${activeFile}...`);
-        
-        try {
-            const res = await fetch(baseUrl + "/run", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
-                body: JSON.stringify({ code: window.editor.getValue() })
+        // --- Monaco & Tabs Logic ---
+        function initMonaco() {
+            monaco.editor.defineTheme('jade-dark', {
+                base: 'vs-dark', inherit: true, rules: [],
+                colors: { 'editor.background': '#09090b', 'editor.lineHighlightBackground': '#18181b' }
             });
-            const data = await res.json();
-            
-            if (data.error) logToTerminal(data.error, 'err');
-            if (data.output) logToTerminal(data.output);
-            
-            if (data.image) {
-                const prev = document.getElementById('preview-view');
-                prev.innerHTML = `<img src="data:image/png;base64,${data.image}">`;
-                switchPanel('graph');
-                logToTerminal("> Graph generated.");
-            }
-        } catch(e) {
-            logToTerminal("Error: " + e.message, 'err');
-        } finally {
-            btn.disabled = false;
-        }
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById('userInput');
-        const urlField = document.getElementById('apiUrl');
-        const msg = input.value.trim();
-        const baseUrl = urlField.value.trim().replace(/\/$/, "");
-        
-        if (!msg) return;
-        
-        const history = document.getElementById('chat-history');
-        // User Msg
-        const uDiv = document.createElement('div');
-        uDiv.className = 'message-group';
-        uDiv.innerHTML = `<div class="avatar user"><i class="ri-user-3-line"></i></div><div class="bubble">${msg}</div>`;
-        history.appendChild(uDiv);
-        input.value = '';
-
-        if (!baseUrl) {
-            const eDiv = document.createElement('div');
-            eDiv.className = 'message-group';
-            eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">Conecte o ngrok acima.</div>`;
-            history.appendChild(eDiv);
-            return;
-        }
-
-        try {
-            const res = await fetch(baseUrl + "/chat", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true'},
-                body: JSON.stringify({ message: msg, current_file_content: window.editor ? window.editor.getValue() : "" })
+            monaco.editor.defineTheme('jade-light', {
+                base: 'vs', inherit: true, rules: [],
+                colors: { 'editor.background': '#ffffff' }
             });
-            const data = await res.json();
-            
-            const bDiv = document.createElement('div');
-            bDiv.className = 'message-group';
-            
-            // Basic formatting
-            let text = data.response.replace(/\n/g, "<br>");
-            // Code block extraction (simple)
-            const codeRegex = /```(?:python)?\s*([\s\S]*?)```/;
-            const match = data.response.match(codeRegex);
-            let codeBtn = '';
-            
-            if (match) {
-                const code = match[1];
-                text = data.response.replace(codeRegex, `<div class="code-block">${code.replace(/</g,"&lt;")}</div>`);
-                codeBtn = `<button class="icon-btn" onclick="applyCodeFromChat(this)" style="font-size:11px; margin-top:5px; border:1px solid var(--border); padding:2px 6px;">Aplicar no Editor</button>`;
-                // Hack to store code
-                setTimeout(() => { bDiv.dataset.code = code; }, 100);
+
+            window.editor = monaco.editor.create(document.getElementById('monaco-container'), {
+                theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'jade-light' : 'jade-dark',
+                automaticLayout: true,
+                fontFamily: 'JetBrains Mono',
+                fontSize: 13,
+                minimap: { enabled: false },
+                suggest: {
+                    showWords: true,
+                    showSnippets: true
+                }
+            });
+
+            // === Jade AI Autocomplete Provider ===
+            registerJadeAutocomplete();
+
+            // Update status bar on change
+            window.editor.onDidChangeCursorPosition((e) => {
+                document.getElementById('cursor-pos').innerText = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+            });
+
+            // Save on change
+            window.editor.onDidChangeModelContent(() => {
+                if (activeFile) {
+                    files[activeFile] = window.editor.getValue();
+                    localStorage.setItem('jade_files', JSON.stringify(files));
+                }
+            });
+        }
+
+        function getLanguage(filename) {
+            if (filename.endsWith('.py')) return 'python';
+            if (filename.endsWith('.md')) return 'markdown';
+            if (filename.endsWith('.js')) return 'javascript';
+            if (filename.endsWith('.html')) return 'html';
+            return 'plaintext';
+        }
+
+        function openFile(filename) {
+            if (!models[filename]) {
+                models[filename] = monaco.editor.createModel(files[filename], getLanguage(filename));
             }
 
-            bDiv.innerHTML = `<div class="avatar bot"><i class="ri-robot-2-line"></i></div><div class="bubble">${text}${codeBtn}</div>`;
-            history.appendChild(bDiv);
-            history.scrollTop = history.scrollHeight;
+            if (!openTabs.includes(filename)) {
+                openTabs.push(filename);
+            }
 
-        } catch (e) {
-            console.error(e);
+            activeFile = filename;
+            window.editor.setModel(models[filename]);
+            renderTabs();
+            renderExplorer(); // Update active highlight
         }
-    }
-    
-    function applyCodeFromChat(btn) {
-        const parent = btn.closest('.message-group');
-        const code = parent.dataset.code;
-        if (code && activeFile) {
-            window.editor.setValue(code);
-        }
-    }
 
-    function toggleTheme() {
-        const html = document.documentElement;
-        const isDark = html.getAttribute('data-theme') !== 'light';
-        html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-        document.getElementById('themeIcon').className = isDark ? 'ri-sun-line' : 'ri-moon-line';
-        if (window.editor) window.editor.updateOptions({ theme: isDark ? 'jade-light' : 'jade-dark' });
-    }
-    
-    // Shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'Enter') {
-            if (document.activeElement.id === 'userInput') sendMessage();
-            else runCode();
-        }
-    });
+        function closeTab(filename, e) {
+            if (e) e.stopPropagation();
+            openTabs = openTabs.filter(t => t !== filename);
 
-</script>
+            if (openTabs.length === 0) {
+                activeFile = null;
+                window.editor.setModel(null);
+            } else if (activeFile === filename) {
+                openFile(openTabs[openTabs.length - 1]);
+            }
+            renderTabs();
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = '';
+            openTabs.forEach(file => {
+                const div = document.createElement('div');
+                div.className = `tab ${file === activeFile ? 'active' : ''}`;
+                div.innerHTML = `<i class="ri-file-code-line"></i> ${file} <i class="ri-close-line close-icon" onclick="closeTab('${file}', event)"></i>`;
+                div.onclick = () => openFile(file);
+                container.appendChild(div);
+            });
+        }
+
+        function renderExplorer() {
+            const container = document.getElementById('file-tree');
+            container.innerHTML = '';
+            Object.keys(files).forEach(file => {
+                const div = document.createElement('div');
+                div.className = `file-item ${file === activeFile ? 'active' : ''}`;
+                div.innerHTML = `<i class="ri-file-code-line"></i> ${file}`;
+                div.onclick = () => openFile(file);
+                container.appendChild(div);
+            });
+        }
+
+        function createNewFile() {
+            const name = prompt("Nome do arquivo (ex: script.py):");
+            if (name && !files[name]) {
+                files[name] = "";
+                localStorage.setItem('jade_files', JSON.stringify(files));
+                openFile(name);
+                renderExplorer();
+            }
+        }
+
+        function resetFiles() {
+            if (confirm("Resetar arquivos para o padrão?")) {
+                files = JSON.parse(JSON.stringify(defaultFiles)); // deep copy
+                localStorage.setItem('jade_files', JSON.stringify(files));
+                location.reload();
+            }
+        }
+
+        // --- Layout & Logic ---
+        function switchSidebar(view) {
+            document.querySelectorAll('.sidebar-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+
+            document.querySelectorAll('.activity-item').forEach(el => el.classList.remove('active'));
+            // Find the element that called this or matching icon logic - crude check:
+            const items = document.querySelectorAll('.activity-item');
+            if (view === 'explorer') items[0].classList.add('active');
+            if (view === 'chat') items[1].classList.add('active');
+        }
+
+        function switchPanel(tab) {
+            const term = document.getElementById('terminal-view');
+            const prev = document.getElementById('preview-view');
+            const tTab = document.getElementById('pt-term');
+            const pTab = document.getElementById('pt-graph');
+
+            if (tab === 'term') {
+                term.style.display = 'block';
+                prev.classList.add('hidden');
+                tTab.classList.add('active');
+                pTab.classList.remove('active');
+            } else {
+                term.style.display = 'none';
+                prev.classList.remove('hidden');
+                tTab.classList.remove('active');
+                pTab.classList.add('active');
+            }
+        }
+
+        // --- API Logic (Run/Chat) ---
+        function logToTerminal(text, type = 'out') {
+            const term = document.getElementById('terminal-view');
+            const div = document.createElement('div');
+            div.className = 'term-line';
+            if (type === 'err') div.style.color = '#ef4444';
+            div.innerText = text;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        async function runCode() {
+            if (!activeFile) return;
+
+            const btn = document.getElementById('runBtn');
+            const urlField = document.getElementById('apiUrl');
+            const baseUrl = urlField.value.trim().replace(/\/$/, "");
+
+            if (!baseUrl) { switchSidebar('chat'); alert("Configure o URL no painel Chat"); return; }
+
+            btn.disabled = true;
+            switchPanel('term');
+            logToTerminal(`> Running ${activeFile}...`);
+
+            try {
+                const res = await fetch(baseUrl + "/run", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Bypass-Tunnel-Reminder': 'true' },
+                    body: JSON.stringify({ code: window.editor.getValue() })
+                });
+                const data = await res.json();
+
+                if (data.error) logToTerminal(data.error, 'err');
+                if (data.output) logToTerminal(data.output);
+
+                if (data.image) {
+                    const prev = document.getElementById('preview-view');
+                    prev.innerHTML = `<img src="data:image/png;base64,${data.image}">`;
+                    switchPanel('graph');
+                    logToTerminal("> Graph generated.");
+                }
+            } catch (e) {
+                logToTerminal("Error: " + e.message, 'err');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const urlField = document.getElementById('apiUrl');
+            const apiKey = getApiKey();
+            const msg = input.value.trim();
+            const baseUrl = urlField.value.trim().replace(/\/$/, "");
+
+            if (!msg) return;
+
+            const history = document.getElementById('chat-history');
+            // User Msg
+            const uDiv = document.createElement('div');
+            uDiv.className = 'message-group';
+            uDiv.innerHTML = `<div class="avatar user"><i class="ri-user-3-line"></i></div><div class="bubble">${msg}</div>`;
+            history.appendChild(uDiv);
+            input.value = '';
+
+            if (!baseUrl) {
+                const eDiv = document.createElement('div');
+                eDiv.className = 'message-group';
+                eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">Configure a URL do servidor acima.</div>`;
+                history.appendChild(eDiv);
+                return;
+            }
+
+            if (!apiKey) {
+                const eDiv = document.createElement('div');
+                eDiv.className = 'message-group';
+                eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">🔑 Configure sua API Key do Groq acima.</div>`;
+                history.appendChild(eDiv);
+                return;
+            }
+
+            try {
+                const res = await fetch(baseUrl + "/chat", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify({ message: msg, current_file_content: window.editor ? window.editor.getValue() : "" })
+                });
+
+                if (res.status === 401) {
+                    throw new Error('API Key inválida ou expirada');
+                }
+
+                const data = await res.json();
+
+                const bDiv = document.createElement('div');
+                bDiv.className = 'message-group';
+
+                // Basic formatting
+                let text = data.response.replace(/\n/g, "<br>");
+                // Code block extraction (simple)
+                const codeRegex = /```(?:python)?\s*([\s\S]*?)```/;
+                const match = data.response.match(codeRegex);
+                let codeBtn = '';
+
+                if (match) {
+                    const code = match[1];
+                    text = data.response.replace(codeRegex, `<div class="code-block">${code.replace(/</g, "&lt;")}</div>`);
+                    codeBtn = `<button class="icon-btn" onclick="applyCodeFromChat(this)" style="font-size:11px; margin-top:5px; border:1px solid var(--border); padding:2px 6px;">Aplicar no Editor</button>`;
+                    // Hack to store code
+                    setTimeout(() => { bDiv.dataset.code = code; }, 100);
+                }
+
+                bDiv.innerHTML = `<div class="avatar bot"><i class="ri-robot-2-line"></i></div><div class="bubble">${text}${codeBtn}</div>`;
+                history.appendChild(bDiv);
+                history.scrollTop = history.scrollHeight;
+
+            } catch (e) {
+                const eDiv = document.createElement('div');
+                eDiv.className = 'message-group';
+                eDiv.innerHTML = `<div class="avatar bot"><i class="ri-error-warning-line"></i></div><div class="bubble">❌ ${e.message}</div>`;
+                history.appendChild(eDiv);
+                console.error(e);
+            }
+        }
+
+        function applyCodeFromChat(btn) {
+            const parent = btn.closest('.message-group');
+            const code = parent.dataset.code;
+            if (code && activeFile) {
+                window.editor.setValue(code);
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') !== 'light';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('themeIcon').className = isDark ? 'ri-sun-line' : 'ri-moon-line';
+            if (window.editor) window.editor.updateOptions({ theme: isDark ? 'jade-light' : 'jade-dark' });
+        }
+
+        // Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (document.activeElement.id === 'userInput') sendMessage();
+                else runCode();
+            }
+        });
+
+        // === JADE AI AUTOCOMPLETE ===
+        let autocompleteTimeout = null;
+
+        function registerJadeAutocomplete() {
+            monaco.languages.registerCompletionItemProvider('python', {
+                triggerCharacters: ['.', '(', ' '],
+                provideCompletionItems: async (model, position) => {
+                    const textUntilPosition = model.getValueInRange({
+                        startLineNumber: 1,
+                        startColumn: 1,
+                        endLineNumber: position.lineNumber,
+                        endColumn: position.column
+                    });
+
+                    const textAfterPosition = model.getValueInRange({
+                        startLineNumber: position.lineNumber,
+                        startColumn: position.column,
+                        endLineNumber: model.getLineCount(),
+                        endColumn: model.getLineMaxColumn(model.getLineCount())
+                    });
+
+                    const baseUrl = document.getElementById('apiUrl').value.trim().replace(/\/$/, "");
+                    const apiKey = getApiKey();
+                    if (!baseUrl || !apiKey) return { suggestions: [] };
+
+                    try {
+                        const res = await fetch(baseUrl + "/complete", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-API-Key': apiKey
+                            },
+                            body: JSON.stringify({
+                                prefix: textUntilPosition,
+                                suffix: textAfterPosition,
+                                language: 'python',
+                                line: position.lineNumber,
+                                column: position.column
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (data.suggestions && data.suggestions.length > 0) {
+                            const suggestions = data.suggestions.map((s, i) => ({
+                                label: s.label || s.insertText,
+                                kind: getMonacoKind(s.kind),
+                                insertText: s.insertText || s.label,
+                                detail: s.detail || '🤖 Jade AI',
+                                documentation: s.documentation || '',
+                                sortText: String(i).padStart(3, '0')
+                            }));
+                            return { suggestions };
+                        }
+                    } catch (e) {
+                        console.log('Autocomplete error:', e);
+                    }
+
+                    return { suggestions: [] };
+                }
+            });
+        }
+
+        function getMonacoKind(kindStr) {
+            const kinds = {
+                'Function': monaco.languages.CompletionItemKind.Function,
+                'Variable': monaco.languages.CompletionItemKind.Variable,
+                'Class': monaco.languages.CompletionItemKind.Class,
+                'Module': monaco.languages.CompletionItemKind.Module,
+                'Keyword': monaco.languages.CompletionItemKind.Keyword,
+                'Snippet': monaco.languages.CompletionItemKind.Snippet,
+                'Property': monaco.languages.CompletionItemKind.Property,
+                'Method': monaco.languages.CompletionItemKind.Method
+            };
+            return kinds[kindStr] || monaco.languages.CompletionItemKind.Text;
+        }
+
+        // === CONNECTION CHECK ===
+        async function checkConnection() {
+            const urlField = document.getElementById('apiUrl');
+            const status = document.getElementById('connection-status');
+            const baseUrl = urlField.value.trim().replace(/\/$/, "");
+
+            status.style.color = 'var(--text-muted)';
+            status.textContent = '⏳';
+
+            try {
+                const res = await fetch(baseUrl + "/", { method: 'GET' });
+                if (res.ok) {
+                    status.style.color = '#10b981';
+                    status.textContent = '●';
+                    logToTerminal('✅ Conectado ao servidor Jade!');
+                } else {
+                    throw new Error('Bad response');
+                }
+            } catch (e) {
+                status.style.color = '#ef4444';
+                status.textContent = '●';
+                logToTerminal('❌ Servidor não encontrado. Rode: python -m code_jade.server', 'err');
+            }
+        }
+
+        // Check connection on load
+        setTimeout(checkConnection, 1000);
+
+        // === API KEY MANAGEMENT (BYOK) ===
+        function getApiKey() {
+            return localStorage.getItem('jade_api_key') || document.getElementById('apiKey').value.trim();
+        }
+
+        function saveApiKey() {
+            const keyField = document.getElementById('apiKey');
+            const key = keyField.value.trim();
+            if (key) {
+                localStorage.setItem('jade_api_key', key);
+                logToTerminal('🔑 API Key salva no navegador');
+            }
+        }
+
+        function toggleKeyVisibility() {
+            const keyField = document.getElementById('apiKey');
+            const icon = document.getElementById('keyEyeIcon');
+            if (keyField.type === 'password') {
+                keyField.type = 'text';
+                icon.className = 'ri-eye-off-line';
+            } else {
+                keyField.type = 'password';
+                icon.className = 'ri-eye-line';
+            }
+        }
+
+        function loadSavedApiKey() {
+            const savedKey = localStorage.getItem('jade_api_key');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+        }
+
+        // Load saved key on page load
+        setTimeout(loadSavedApiKey, 100);
+
+    </script>
 </body>
+
 </html>
