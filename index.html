@@ -946,18 +946,17 @@
                 const bDiv = document.createElement('div');
                 bDiv.className = 'message-group';
 
-                // Basic formatting
-                let text = data.response.replace(/\n/g, "<br>");
-                // Code block extraction (simple)
-                const codeRegex = /```(?:python)?\s*([\s\S]*?)```/;
+                // Better markdown formatting
+                let text = formatMarkdown(data.response);
+
+                // Extract code for "Apply" button
+                const codeRegex = /```(?:\w+)?\s*([\s\S]*?)```/;
                 const match = data.response.match(codeRegex);
                 let codeBtn = '';
 
                 if (match) {
-                    const code = match[1];
-                    text = data.response.replace(codeRegex, `<div class="code-block">${code.replace(/</g, "&lt;")}</div>`);
-                    codeBtn = `<button class="icon-btn" onclick="applyCodeFromChat(this)" style="font-size:11px; margin-top:5px; border:1px solid var(--border); padding:2px 6px;">Aplicar no Editor</button>`;
-                    // Hack to store code
+                    const code = match[1].trim();
+                    codeBtn = `<button class="icon-btn" onclick="applyCodeFromChat(this)" style="font-size:11px; margin-top:8px; border:1px solid var(--border); padding:4px 8px; border-radius:4px;">📋 Aplicar no Editor</button>`;
                     setTimeout(() => { bDiv.dataset.code = code; }, 100);
                 }
 
@@ -1191,7 +1190,44 @@
         // Load saved provider on page load
         setTimeout(loadSavedProvider, 200);
 
+        // === MARKDOWN FORMATTING ===
+        function formatMarkdown(text) {
+            if (!text) return '';
+
+            // Escape HTML first
+            let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Code blocks with syntax highlighting style
+            html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, lang, code) => {
+                const langLabel = lang ? `<span style="color:var(--text-muted);font-size:10px;">${lang}</span>` : '';
+                return `<div class="code-block">${langLabel}<pre style="margin:0;white-space:pre-wrap;word-break:break-all;">${code.trim()}</pre></div>`;
+            });
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code style="background:var(--bg-activity);padding:2px 6px;border-radius:3px;font-size:12px;">$1</code>');
+
+            // Bold
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Italic
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            // Headers (## Header)
+            html = html.replace(/^## (.+)$/gm, '<h4 style="margin:8px 0 4px;color:var(--primary);">$1</h4>');
+            html = html.replace(/^# (.+)$/gm, '<h3 style="margin:10px 0 6px;color:var(--primary);">$1</h3>');
+
+            // Lists
+            html = html.replace(/^- (.+)$/gm, '<li style="margin-left:16px;">$1</li>');
+            html = html.replace(/^\d+\. (.+)$/gm, '<li style="margin-left:16px;">$1</li>');
+
+            // Line breaks
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
+        }
+
     </script>
 </body>
+
 
 </html>
