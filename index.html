@@ -1140,22 +1140,25 @@
         setTimeout(loadSavedApiKey, 100);
 
         // === PROVIDER/MODEL MANAGEMENT ===
+        // === PROVIDER/MODEL MANAGEMENT ===
         const MODEL_CACHE = {
             groq: [
+                { id: "moonshotai/kimi-k2-instruct-0905", name: "Kimi K2 Instruct" },
+                { id: "meta-llama/llama-4-maverick-17b-128e-instruct", name: "Llama 4 Maverick 17B" },
                 { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B" },
-                { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B (Fast)" },
-                { id: "mixtral-8x7b-32768", name: "Mixtral 8x7B" },
             ],
             cerebras: [
+                { id: "gpt-oss-120b", name: "GPT OSS 120B" },
+                { id: "qwen-3-235b-a22b-instruct-2507", name: "Qwen 3 235B" },
+                { id: "zai-glm-4.6", name: "GLM 4.6" },
                 { id: "llama3.1-70b", name: "Llama 3.1 70B" },
-                { id: "llama3.1-8b", name: "Llama 3.1 8B (Ultra Fast)" },
             ],
             openrouter: [
+                { id: "xiaomi/mimo-v2-flash:free", name: "Xiaomi Mimo V2 Flash" },
+                { id: "nex-agi/deepseek-v3.1-nex-n1:free", name: "DeepSeek V3.1 Nex" },
+                { id: "qwen/qwen3-coder:free", name: "Qwen 3 Coder" },
                 { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet" },
                 { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash (Free)" },
-                { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B" },
-                { id: "deepseek/deepseek-chat", name: "DeepSeek V3" },
-                { id: "qwen/qwen-2.5-coder-32b-instruct", name: "Qwen 2.5 Coder 32B" },
             ]
         };
 
